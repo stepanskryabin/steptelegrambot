@@ -130,3 +130,6 @@ dmypy.json
 
 # GZ files
 *.gz
+
+# Visual Studio Code
+.vscode

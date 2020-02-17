@@ -15,6 +15,8 @@ TOWN_ID: str = 'Kirovo-Chepetsk,RU'
 bot = telebot.TeleBot(config.TOKEN)
 # Урл куда бот обращается за информацией о погоде
 url: str = 'https://api.openweathermap.org/data/2.5/weather?'
+first_img_url: str = 'https://openweathermap.org/img/wn/'
+second_img_url: str = '@2x.png'
 # 
 town = TOWN_ID
 # АПИ токен для доступа к данным сайта openweathermap.org
@@ -27,7 +29,8 @@ const_mm_hg: float = 7.5006E-3
 
 # Функция возвращает json-объект с информацией о погоде в заданном городе
 def return_all_weather(weather_url, weather_town, weather_token):
-    response = requests.get(weather_url, params={'q': weather_town, 'appid': weather_token, 'units': 'metric'})
+    response = requests.get(weather_url,
+                            params={'q': weather_town, 'appid': weather_token, 'units': 'metric', 'lang': 'RU'})
     return response.json()
 
 
@@ -39,7 +42,7 @@ def return_all_weather(weather_url, weather_town, weather_token):
 def command_handler(message: Message):
     # sti = open(config.W_STICKER, 'rb')
     # bot.send_sticker(message.chat.id, sti)
-    bot.send_message(message.chat.id, "Привет, я Погодный бот! Набери help чтобы узнать что я могу")
+    bot.send_message(message.chat.id, "Привет, я Погодный бот!")
     return
 
 
@@ -47,35 +50,52 @@ def command_handler(message: Message):
 @bot.edited_message_handler(commands=['help'])
 def command_handler(message: Message):
     if message.location is not None:
-        bot.reply_to(message, f'Этот бот помогает узнать погоду в городе {message.location}\n'
-                               'Введите ключевые слова: <b>погода</b>, <b>влажность</b> или <b>давление</b>'
-                               ' и я дам вам ответ', parse_mode='HTML')
+        bot.send_message(message.chat.id, f'Этот бот помогает узнать погоду в городе {message.location}\n'
+                                           'Введите команду "weather" и я дам вам ответ', parse_mode='HTML')
     else:
-        bot.reply_to(message, f'Этот бот помогает узнать погоду в вашем городе \n'
-                               'Введите ключевые слова: <b>погода</b>, <b>влажность</b> или <b>давление</b>'
-                               ' и я дам вам ответ', parse_mode='HTML')
+        bot.send_message(message.chat.id, f'Этот бот помогает узнать погоду в вашем городе \n'
+                                          'Введите команду "weather" и я дам вам ответ', parse_mode='HTML')
+    return
+
+
+@bot.message_handler(commands=['weather'])
+@bot.edited_message_handler(commands=['weather'])
+def command_handler(message: Message):
+    date = return_all_weather(url, town, token)
+    pa: int = date['main']['pressure']
+    mm_hg = (pa * 100) * const_mm_hg
+    img_url: str = first_img_url + date['weather'][0]['icon'] + second_img_url
+    bot.send_message(message.chat.id, f"Сейчас в {date['name']}e <b><i>{date['weather'][0]['description']}</i></b> \n"
+                                      f"Температура <b>{date['main']['temp']} C</b>. \n"
+                                      f"Чувствуется как <b>{date['main']['feels_like']} C</b>. \n"
+                                      f"Давление <b>{int(mm_hg)} мм.рт.ст.</b> \n"
+                                      f"Влажность <b>{date['main']['humidity']} %</b> \n"
+                                      f"Облачность <b>{date['clouds']['all']} %</b> \n"
+                                      f"Скорость ветра <b>{date['wind']['speed']} м. в сек.</b>", parse_mode='HTML')
+    bot.send_photo(message.chat.id, img_url, disable_notification='1')
     return
 
 
 # Обработчик сообщения с командами
-@bot.message_handler(content_types=['text'])
-@bot.edited_message_handler(content_types=['text'])
-def command_handler(message: Message):
-    date = return_all_weather(url, town, token)
-    if 'погода' in message.text:
-        bot.reply_to(message, f"Сейчас температура <b>{date['main']['temp']}</b> градуса. \
-        Чувствуется как <b>{date['main']['feels_like']}</b> градуса", parse_mode='HTML')
-    elif 'давление' in message.text:
-        pa: int = date['main']['pressure']
-        mm_hg = (pa * 100) * const_mm_hg
-        bot.reply_to(message, f"Сейчас давление <b>{int(mm_hg)} мм.рт.ст</b>", parse_mode='HTML')
-    elif 'влажность' in message.text:
-        bot.reply_to(message, f"Сейчас влажность <b>{date['main']['humidity']} %</b>", parse_mode='HTML')
-    elif 'настроение' in message.text:
-        bot.reply_to(message, f"Сейчас настроение - <b>{date['weather']['0']['description']}</b>", parse_mode='HTML')
-    else:
-        bot.reply_to(message, "Нет! Нужно ввести: <b>погода</b>, <b>влажность</b> или <b>давление</b>", parse_mode='HTML')
-    return
+# @bot.message_handler(content_types=['text'])
+# @bot.edited_message_handler(content_types=['text'])
+# def command_handler(message: Message):
+#     date = return_all_weather(url, town, token)
+#     if 'погода' in message.text:
+#         bot.reply_to(message, f"Сейчас температура <b>{date['main']['temp']}</b> градуса. \
+#         Чувствуется как <b>{date['main']['feels_like']}</b> градуса", parse_mode='HTML')
+#     elif 'давление' in message.text:
+#         pa: int = date['main']['pressure']
+#         mm_hg = (pa * 100) * const_mm_hg
+#         bot.reply_to(message, f"Сейчас давление <b>{int(mm_hg)} мм.рт.ст</b>", parse_mode='HTML')
+#     elif 'влажность' in message.text:
+#         bot.reply_to(message, f"Сейчас влажность <b>{date['main']['humidity']} %</b>", parse_mode='HTML')
+#     elif 'настроение' in message.text:
+#         bot.reply_to(message, f"Сейчас настроение - <b>{date['weather']['0']['description']}</b>", parse_mode='HTML')
+#     else:
+#         bot.reply_to(message, "Нет! Нужно ввести: <b>погода</b>, <b>влажность</b> или <b>давление</b>",
+#                      parse_mode='HTML')
+#     return
 
 
 # def send_content_message(message: Message):
