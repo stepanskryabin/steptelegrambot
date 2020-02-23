@@ -1,117 +1,112 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Autor: Stepan Skriabin - stepan.skrjabin@gmail.com
 
 import telebot
 from telebot.types import Message
 import config
-import requests
-
-# NAME = POCO
-# NICKNAME = StepTelegramBot
-
-# Город
-TOWN_ID: str = 'Kirovo-Chepetsk,RU'
-# передача токена телеграм боту
-bot = telebot.TeleBot(config.TOKEN)
-# Урл куда бот обращается за информацией о погоде
-url: str = 'https://api.openweathermap.org/data/2.5/weather?'
-first_img_url: str = 'https://openweathermap.org/img/wn/'
-second_img_url: str = '@2x.png'
-# 
-town = TOWN_ID
-# АПИ токен для доступа к данным сайта openweathermap.org
-token = config.TOKEN_WEATHER
-
-USERS = set()
-# Константа перевода давления из паскалей в милиметры ртутного столба
-const_mm_hg: float = 7.5006E-3
+from translitua import translit, RussianInternationalPassport1997
+from searching_modul import SearchWeather
 
 
-# Функция возвращает json-объект с информацией о погоде в заданном городе
-def return_all_weather(weather_url, weather_town, weather_token):
-    response = requests.get(weather_url,
-                            params={'q': weather_town, 'appid': weather_token, 'units': 'metric', 'lang': 'RU'})
-    return response.json()
+# TODO Porting function 'search' and 'choose another city' in module
+# create a new Telegram Bot object
+bot = telebot.TeleBot(config.TOKEN_BOT)
 
+# List of users id (from telegram)
+# TODO added collection of Users ID and Users configuration
+# USERS = set()
 
-# date = return_all_weather(url, town, token)
+# TODO added logging
 
-
+# Return information about StepTelegramBot
 @bot.message_handler(commands=['start'])
 @bot.edited_message_handler(commands=['start'])
 def command_handler(message: Message):
+    # Insert sticker in message text
     # sti = open(config.W_STICKER, 'rb')
     # bot.send_sticker(message.chat.id, sti)
-    bot.send_message(message.chat.id, "Привет, я Погодный бот!")
+    bot.send_message(message.chat.id, "Привет, я <b>Погодный бот!</b>\n"
+                                      "Набери имя города и я поищу информацию о погоде в нём.\n"
+                                      "Если нужна более подробная информация жми /help", parse_mode='HTML')
     return
 
 
+# Return help information
 @bot.message_handler(commands=['help'])
 @bot.edited_message_handler(commands=['help'])
 def command_handler(message: Message):
     if message.location is not None:
         bot.send_message(message.chat.id, f'Этот бот помогает узнать погоду в городе {message.location}\n'
-                                           'Введите команду "weather" и я дам вам ответ', parse_mode='HTML')
+                                           'Введите название города, непример: Киров и я дам вам ответ', parse_mode='HTML')
     else:
         bot.send_message(message.chat.id, f'Этот бот помогает узнать погоду в вашем городе \n'
-                                          'Введите команду "weather" и я дам вам ответ', parse_mode='HTML')
+                                          'Введите название города, непример: Москва и я дам ответ.\n'
+                                          'Ещё у меня есть встроенные команды для поиска погоды в Кирове и Кирово-Чепецке.\n'
+                                          'Просто набери команду /chepetsk или /kirov', parse_mode='HTML')
     return
 
 
-@bot.message_handler(commands=['weather'])
-@bot.edited_message_handler(commands=['weather'])
+# Return version for StepTelegramBot
+@bot.message_handler(commands=['version'])
+@bot.edited_message_handler(commands=['version'])
 def command_handler(message: Message):
-    date = return_all_weather(url, town, token)
-    pa: int = date['main']['pressure']
-    mm_hg = (pa * 100) * const_mm_hg
-    img_url: str = first_img_url + date['weather'][0]['icon'] + second_img_url
-    bot.send_message(message.chat.id, f"Сейчас в {date['name']}e <b><i>{date['weather'][0]['description']}</i></b> \n"
-                                      f"Температура <b>{date['main']['temp']} C</b>. \n"
-                                      f"Чувствуется как <b>{date['main']['feels_like']} C</b>. \n"
-                                      f"Давление <b>{int(mm_hg)} мм.рт.ст.</b> \n"
-                                      f"Влажность <b>{date['main']['humidity']} %</b> \n"
-                                      f"Облачность <b>{date['clouds']['all']} %</b> \n"
-                                      f"Скорость ветра <b>{date['wind']['speed']} м. в сек.</b>", parse_mode='HTML')
-    bot.send_photo(message.chat.id, img_url, disable_notification='1')
+    bot_version = SearchWeather()
+    bot.send_message(message.chat.id, f"Версия бота: {bot_version.version}", parse_mode='HTML')
+    return
+
+# Return weather in fixed city Kirovo-Chepetsk
+# TODO change this function
+@bot.message_handler(commands=['chepetsk'])
+@bot.edited_message_handler(commands=['chepetsk'])
+def command_handler(message: Message):
+    w = SearchWeather('Kirovo-Chepetsk')
+    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()}e <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
+                                      f"Температура: <b>{w.temp()} C</b>. \n"
+                                      f"Чувствуется как: <b>{w.feels()} C</b>. \n"
+                                      f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
+                                      f"Влажность: <b>{w.humidity()} %</b> \n"
+                                      f"Облачность: <b>{w.clouds()} %</b> \n"
+                                      f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
     return
 
 
-# Обработчик сообщения с командами
-# @bot.message_handler(content_types=['text'])
-# @bot.edited_message_handler(content_types=['text'])
-# def command_handler(message: Message):
-#     date = return_all_weather(url, town, token)
-#     if 'погода' in message.text:
-#         bot.reply_to(message, f"Сейчас температура <b>{date['main']['temp']}</b> градуса. \
-#         Чувствуется как <b>{date['main']['feels_like']}</b> градуса", parse_mode='HTML')
-#     elif 'давление' in message.text:
-#         pa: int = date['main']['pressure']
-#         mm_hg = (pa * 100) * const_mm_hg
-#         bot.reply_to(message, f"Сейчас давление <b>{int(mm_hg)} мм.рт.ст</b>", parse_mode='HTML')
-#     elif 'влажность' in message.text:
-#         bot.reply_to(message, f"Сейчас влажность <b>{date['main']['humidity']} %</b>", parse_mode='HTML')
-#     elif 'настроение' in message.text:
-#         bot.reply_to(message, f"Сейчас настроение - <b>{date['weather']['0']['description']}</b>", parse_mode='HTML')
-#     else:
-#         bot.reply_to(message, "Нет! Нужно ввести: <b>погода</b>, <b>влажность</b> или <b>давление</b>",
-#                      parse_mode='HTML')
-#     return
+# Return weather in fixed city Kirovo-Chepetsk
+# TODO change this function
+@bot.message_handler(commands=['kirov'])
+@bot.edited_message_handler(commands=['kirov'])
+def command_handler(message: Message):
+    w = SearchWeather('Kirov')
+    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()}e <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
+                                      f"Температура: <b>{w.temp()} C</b>. \n"
+                                      f"Чувствуется как: <b>{w.feels()} C</b>. \n"
+                                      f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
+                                      f"Влажность: <b>{w.humidity()} %</b> \n"
+                                      f"Облачность: <b>{w.clouds()} %</b> \n"
+                                      f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
+    return
 
+# Return weather from city
+@bot.message_handler(content_types=['text'])
+@bot.edited_message_handler(content_types=['text'])
+def command_handler(message: Message):
+    city_name = translit(message.text, RussianInternationalPassport1997)
+    w = SearchWeather(city_name)
+    if w.result() == 200:
+        bot.send_message(message.chat.id, f"Сейчас в {w.city_name()}e <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
+                                          f"Температура: <b>{w.temp()} C</b>. \n"
+                                          f"Чувствуется как: <b>{w.feels()} C</b>. \n"
+                                          f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
+                                          f"Влажность: <b>{w.humidity()} %</b> \n"
+                                          f"Облачность: <b>{w.clouds()} %</b> \n"
+                                          f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
+    elif w.result() == '404':
+        bot.send_message(message.chat.id, f"\U0001F6AB Такой город <s>не существует</s>. Возможно вы допустили ошибку?", parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
+    return
 
-# def send_content_message(message: Message):
-#     # if 'Я хороший' in message.text:
-#     #     bot.reply_to(message, 'Степан хороший!')
-#     # print('Message==', message)
-#     reply: str = ''
-#     if message.from_user.id in USERS:
-#         reply += f"{message.from_user.first_name}, hello again"
-#         bot.reply_to(message, reply)
-#     else:
-#         bot.reply_to(message, 'Я тебя вижу в первый раз')
-#     USERS.add(message.from_user.id)
-#     # print('USERS==', USERS)
-
-
+# Return sticker
 @bot.message_handler(content_types=['sticker'])
 def sticker_handler(message: Message):
     bot.send_sticker(message.chat.id, config.STICKER_ID)
@@ -127,7 +122,7 @@ def sticker_handler(message: Message):
 #     except Exception as e:
 #         print(e)
 
-
+# Echo replay
 # @bot.message_handler(func=lambda m: True)
 # def echo_all(message):
 #     bot.reply_to(message, message.text)
