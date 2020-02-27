@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Autor: Stepan Skriabin - stepan.skrjabin@gmail.com
+# Autor: Stepan Skriabin
+# email: stepan.skrjabin@gmail.com
 
 import telebot
 from telebot.types import Message
