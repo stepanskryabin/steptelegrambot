@@ -8,6 +8,7 @@ from telebot.types import Message
 import config
 from translitua import translit, RussianInternationalPassport1997
 from searching_modul import SearchWeather
+import logging
 
 
 # TODO Porting function 'search' and 'choose another city' in module
