@@ -10,16 +10,21 @@ import config
 if __name__ == '__main__':
     pass
 else:
-    # main class? send requests from openweathermap.org and get JSON-file with information
+    # main class, send requests from openweathermap.org and get JSON-file with information
     class SearchWeather:
 
-        def __init__(self, weather_town=None):
-            self.version: str = '0.0.3'
+        def __init__(self):
+            self.development: str = '0.0.3d1'
             self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
-            self.town: str = weather_town
             # API-token for access information from site openweathermap.org
             self.token: str = '37873d63e797d6975300b883e143838a'
-            self.response = requests.get(self.url, params={'q': self.town, 'appid': self.token, 'units': 'metric', 'lang': 'RU'})
+            self.response = ''
+            self.data = {}
+
+        def check_weather(self, town=None):
+            self.town: str = town
+            self.response = requests.get(self.url,
+                                         params={'q': self.town, 'appid': self.token, 'units': 'metric', 'lang': 'RU'})
             self.data = self.response.json()
 
         # Return error code
@@ -62,7 +67,7 @@ else:
             return all_clouds
 
         def version(self):
-            return self.version
+            return self.development
 
         # Return code of emoji from weather description
         def insert_emoji(self):
