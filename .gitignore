@@ -139,4 +139,3 @@ dmypy.json
 
 # StepTelegramBot log-file
 /log
-TOKEN.py

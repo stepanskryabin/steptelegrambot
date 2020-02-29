@@ -5,7 +5,7 @@
 # Autor: Stepan Skriabin
 # email: stepan.skrjabin@gmail.com
 
-import logging
+#import logging
 import telebot
 from telebot.types import Message
 import config
@@ -19,8 +19,7 @@ from searching_modul import SearchWeather
 bot = telebot.TeleBot(TOKEN.BOT)
 
 # Configuring the logging module
-logging.basicConfig(filename=config.FILENAME, filemode=config.FILEMODE, format=config.FORMAT_MESSAGE,
-                    datefmt=config.DATE_FORMAT, level=config.MESSAGE_LEVEL)
+#logging.basicConfig(filename=config.FILENAME, filemode=config.FILEMODE, format=config.FORMAT_MESSAGE, datefmt=config.DATE_FORMAT, level=config.MESSAGE_LEVEL)
 
 # Create a new SearchWeather object
 w = SearchWeather()
@@ -62,7 +61,7 @@ def command_handler(message: Message):
 @bot.message_handler(commands=['version'])
 @bot.edited_message_handler(commands=['version'])
 def command_handler(message: Message):
-    logging.debug(f'Bot version request={w.version()}')
+#    logging.debug(f'Bot version request={w.version()}')
     bot.send_message(message.chat.id, f"Версия бота: {w.version()}", parse_mode='HTML')
     return
 
@@ -73,7 +72,7 @@ def command_handler(message: Message):
 @bot.edited_message_handler(commands=['chepetsk'])
 def command_handler(message: Message):
     w.check_weather(town='Kirovo-Chepetsk')
-    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()}e <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
+    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
                                       f"Температура: <b>{w.temp()} C</b>. \n"
                                       f"Чувствуется как: <b>{w.feels()} C</b>. \n"
                                       f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
@@ -89,7 +88,7 @@ def command_handler(message: Message):
 @bot.edited_message_handler(commands=['kirov'])
 def command_handler(message: Message):
     w.check_weather(town='Kirov')
-    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()}e <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
+    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
                                       f"Температура: <b>{w.temp()} C</b>. \n"
                                       f"Чувствуется как: <b>{w.feels()} C</b>. \n"
                                       f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
@@ -104,12 +103,12 @@ def command_handler(message: Message):
 @bot.edited_message_handler(content_types=['text'])
 def command_handler(message: Message):
     city_name = translit(message.text, RussianInternationalPassport1997)
-    logging.debug(f'City name={city_name}')
+#    logging.debug(f'City name={city_name}')
     w.check_weather(town=city_name)
-    logging.debug(f'Value w.result={w.result()}')
+#    logging.debug(f'Value w.result={w.result()}')
     if w.result() == 200:
         bot.send_message(message.chat.id,
-                         f"Сейчас в {w.city_name()}e <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
+                         f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
                          f"Температура: <b>{w.temp()} C</b>. \n"
                          f"Чувствуется как: <b>{w.feels()} C</b>. \n"
                          f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"

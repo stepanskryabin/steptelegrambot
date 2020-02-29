@@ -22,6 +22,8 @@ else:
             self.token: str = TOKEN.WEATHER
             self.response = ''
             self.data = {}
+            self.last_word = 0
+            self.quantity_word = 0
 
         def check_weather(self, town=None):
             self.town: str = town
@@ -34,9 +36,34 @@ else:
             search_result = self.data['cod']
             return search_result
 
+        # Return city name with replace end of word
         def city_name(self):
-            name = self.data['name']
-            return name
+            word: str = self.data['name']
+            last_word: str = word[-1]
+            x = 'е'
+            if last_word == 'а':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'o':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'ий':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'у':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'ъ':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'ь':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'и':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'я':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'ю':
+                new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'э':
+                new_word: str = word[0:len(word) - 1] + x
+            else:
+                new_word: str = word
+            return new_word
 
         def description(self):
             weather_description = self.data['weather'][0]['description']
@@ -134,11 +161,3 @@ else:
                 804: '\U00002601'
             }
             return dict[int(icon_name)]
-
-    class ReplacementWordEnd:
-
-        def __init__(self):
-            self.name = ''
-            self.last_word = 0
-
-        def number_of_last_word(self, word=None):
