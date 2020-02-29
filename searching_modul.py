@@ -61,6 +61,8 @@ else:
                 new_word: str = word[0:len(word) - 1] + x
             elif last_word == 'э':
                 new_word: str = word[0:len(word) - 1] + x
+            elif last_word == 'к':
+                new_word: str = word[0:len(word)] + x
             else:
                 new_word: str = word
             return new_word
