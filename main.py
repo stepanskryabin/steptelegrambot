@@ -9,13 +9,14 @@ import logging
 import telebot
 from telebot.types import Message
 import config
+import TOKEN
 from translitua import translit, RussianInternationalPassport1997
 from searching_modul import SearchWeather
 
 
 # TODO Porting function 'search' and 'choose another city' in module
 # Create a new Telegram Bot object
-bot = telebot.TeleBot(config.TOKEN_BOT)
+bot = telebot.TeleBot(TOKEN.BOT)
 
 # Configuring the logging module
 logging.basicConfig(filename=config.FILENAME, filemode=config.FILEMODE, format=config.FORMAT_MESSAGE,

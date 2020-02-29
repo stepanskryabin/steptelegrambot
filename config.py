@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 # CONFIG FILE
 
-# bot token from @BotFather
-TOKEN_BOT: str = '881619768:AAG2U7escnyRJTPvCHEPJB5Yhvpi7fYToMQ'
-
 #Stiker Welcome
 W_STICKER: str = './welcome.webp'
 

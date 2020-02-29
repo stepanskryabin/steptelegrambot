@@ -5,6 +5,8 @@
 
 import requests
 import config
+import TOKEN
+
 
 #
 if __name__ == '__main__':
@@ -14,10 +16,10 @@ else:
     class SearchWeather:
 
         def __init__(self):
-            self.development: str = '0.0.3d1'
+            self.development: str = '0.0.3d2'
             self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
             # API-token for access information from site openweathermap.org
-            self.token: str = '37873d63e797d6975300b883e143838a'
+            self.token: str = TOKEN.WEATHER
             self.response = ''
             self.data = {}
 
@@ -132,3 +134,11 @@ else:
                 804: '\U00002601'
             }
             return dict[int(icon_name)]
+
+    class ReplacementWordEnd:
+
+        def __init__(self):
+            self.name = ''
+            self.last_word = 0
+
+        def number_of_last_word(self, word=None):
