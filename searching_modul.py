@@ -16,7 +16,7 @@ else:
     class SearchWeather:
 
         def __init__(self):
-            self.development: str = '0.0.3d2'
+            self.development: str = '0.0.3d3'
             self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
             # API-token for access information from site openweathermap.org
             self.token: str = TOKEN.WEATHER
@@ -39,30 +39,16 @@ else:
         # Return city name with replace end of word
         def city_name(self):
             word: str = self.data['name']
-            last_word: str = word[-1]
-            x = 'е'
-            if last_word == 'а':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'o':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'ий':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'у':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'ъ':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'ь':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'и':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'я':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'ю':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'э':
-                new_word: str = word[0:len(word) - 1] + x
-            elif last_word == 'к':
-                new_word: str = word[0:len(word)] + x
+            if word[-2:] == 'ий':
+                new_word: str = word.replace(word[-2:], 'ом')
+            elif word[-1:] in ['а', 'o', 'у', 'ъ', 'ь', 'ю', 'э', 'й', 'я']:
+                new_word: str = word.replace(word[-1:], 'е')
+            elif word[-1:] == 'ь':
+                new_word: str = word.replace(word[-1:], 'и')
+            elif word[-1:] in ['ы', 'и']:
+                new_word: str = word.replace(word[-1:], 'ах')
+            elif word[-1:] in ['в', 'к', 'р', 'н', 'с', 'т', 'л', 'ш', 'щ', 'з', 'х', 'п', 'д', 'ж', 'ч', 'м', 'б']:
+                new_word: str = word + 'е'
             else:
                 new_word: str = word
             return new_word
