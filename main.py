@@ -82,7 +82,7 @@ def command_handler(message: Message):
     return
 
 
-# Return weather in fixed city Kirovo-Chepetsk
+# Return weather in fixed city Kirov
 # TODO change this function
 @bot.message_handler(commands=['kirov'])
 @bot.edited_message_handler(commands=['kirov'])
@@ -130,14 +130,16 @@ def sticker_handler(message: Message):
     return
 
 
-# @bot.inline_handler(lambda query: query.query == 'weather')
-# def query_text(inline_query):
-#     try:
-#         r = types.InlineQueryResultArticle('1', 'Result', types.InputTextMessageContent('Result message.'))
-#         r2 = types.InlineQueryResultArticle('2', 'Result2', types.InputTextMessageContent('Result message2.'))
-#         bot.answer_inline_query(inline_query.id, [r, r2])
-#     except Exception as e:
-#         print(e)
+# Inline mode search weather in Kirov or Kirovo-Chepetsk
+@bot.inline_handler(lambda query: query.query in ['Ки', 'Ki', 'ки', 'ki'])
+def query_text(inline_query):
+    try:
+        kirov = telebot.types.InlineQueryResultArticle('1', 'Киров', telebot.types.InputTextMessageContent('Киров'))
+        kirovochepetsk = telebot.types.InlineQueryResultArticle('2', 'Кирово-Чепецк', telebot.types.InputTextMessageContent('Кирово-Чепецк'))
+        bot.answer_inline_query(inline_query.id, [kirov, kirovochepetsk])
+    except Exception as e:
+        print(e)
+
 
 # Echo replay
 # @bot.message_handler(func=lambda m: True)

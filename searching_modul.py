@@ -16,7 +16,7 @@ else:
     class SearchWeather:
 
         def __init__(self):
-            self.development: str = '0.0.3d3'
+            self.development: str = '0.0.4'
             self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
             # API-token for access information from site openweathermap.org
             self.token: str = TOKEN.WEATHER
@@ -47,7 +47,7 @@ else:
                 new_word: str = word.replace(word[-1:], 'и')
             elif word[-1:] in ['ы', 'и']:
                 new_word: str = word.replace(word[-1:], 'ах')
-            elif word[-1:] in ['в', 'к', 'р', 'н', 'с', 'т', 'л', 'ш', 'щ', 'з', 'х', 'п', 'д', 'ж', 'ч', 'м', 'б']:
+            elif word[-1:] in ['в', 'к', 'р', 'н', 'с', 'т', 'л', 'ш', 'щ', 'з', 'х', 'п', 'д', 'ж', 'ч', 'м', 'б', 'г']:
                 new_word: str = word + 'е'
             else:
                 new_word: str = word
