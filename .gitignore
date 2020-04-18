@@ -133,6 +133,7 @@ dmypy.json
 
 # Visual Studio Code
 .vscode
+*.code-workspace
 
 # PyCharm
 .idea
