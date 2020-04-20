@@ -4,18 +4,20 @@
 # NICKNAME = StepTelegramBot
 # Autor: Stepan Skriabin
 # email: stepan.skrjabin@gmail.com
+__version__ = '0.0.5'
 
-#import logging
-import telebot
+from telebot import TeleBot
 from telebot.types import Message
+from telebot.types import InlineQueryResultArticle
+from telebot.types import InputTextMessageContent
+from translitua import translit
+from translitua import RussianInternationalPassport1997
+
 import config
 import TOKEN
-from translitua import translit, RussianInternationalPassport1997
 from searching_modul import SearchWeather
 
 
-# TODO Porting function 'search' and 'choose another city' in module
-# Create a new Telegram Bot object
 bot = telebot.TeleBot(TOKEN.BOT)
 
 # Configuring the logging module
@@ -23,10 +25,6 @@ bot = telebot.TeleBot(TOKEN.BOT)
 
 # Create a new SearchWeather object
 w = SearchWeather()
-
-# List of users id (from telegram)
-# TODO added collection of Users ID and Users configuration
-# USERS = set()
 
 # Return information about StepTelegramBot
 @bot.message_handler(commands=['start'])
@@ -61,13 +59,12 @@ def command_handler(message: Message):
 @bot.message_handler(commands=['version'])
 @bot.edited_message_handler(commands=['version'])
 def command_handler(message: Message):
-#    logging.debug(f'Bot version request={w.version()}')
-    bot.send_message(message.chat.id, f"Версия бота: {w.version()}", parse_mode='HTML')
+    #    logging.debug(f'Bot version request={w.version()}')
+    bot.send_message(
+        message.chat.id, f"Версия бота: {w.version()}", parse_mode='HTML')
     return
 
 
-# Return weather in fixed city Kirovo-Chepetsk
-# TODO change this function
 @bot.message_handler(commands=['chepetsk'])
 @bot.edited_message_handler(commands=['chepetsk'])
 def command_handler(message: Message):
@@ -83,7 +80,6 @@ def command_handler(message: Message):
 
 
 # Return weather in fixed city Kirov
-# TODO change this function
 @bot.message_handler(commands=['kirov'])
 @bot.edited_message_handler(commands=['kirov'])
 def command_handler(message: Message):
@@ -119,7 +115,8 @@ def command_handler(message: Message):
         bot.send_message(message.chat.id, f"\U0001F6AB Такой город <s>не существует</s>. Возможно вы допустили ошибку?",
                          parse_mode='HTML')
     else:
-        bot.send_message(message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
+        bot.send_message(
+            message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
     return
 
 
@@ -134,8 +131,10 @@ def sticker_handler(message: Message):
 @bot.inline_handler(lambda query: query.query in ['Ки', 'Ki', 'ки', 'ki'])
 def query_text(inline_query):
     try:
-        kirov = telebot.types.InlineQueryResultArticle('1', 'Киров', telebot.types.InputTextMessageContent('Киров'))
-        kirovochepetsk = telebot.types.InlineQueryResultArticle('2', 'Кирово-Чепецк', telebot.types.InputTextMessageContent('Кирово-Чепецк'))
+        kirov = telebot.types.InlineQueryResultArticle(
+            '1', 'Киров', telebot.types.InputTextMessageContent('Киров'))
+        kirovochepetsk = telebot.types.InlineQueryResultArticle(
+            '2', 'Кирово-Чепецк', telebot.types.InputTextMessageContent('Кирово-Чепецк'))
         bot.answer_inline_query(inline_query.id, [kirov, kirovochepetsk])
     except Exception as e:
         print(e)

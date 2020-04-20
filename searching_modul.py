@@ -4,32 +4,48 @@
 # Search weather on the openweathermap.org
 
 import requests
+import sqlite3
+
 import config
 import TOKEN
 
 
-#
-if __name__ == '__main__':
-    pass
-else:
-    # main class, send requests from openweathermap.org and get JSON-file with information
-    class SearchWeather:
+class DataBase:
+    def __init__(self):
+        self.database = sqlite3.connect('bot.db')
+        self.connection_cursor = self.database.cursor()
+        self.pragma = self.connection_cursor.execute(
+            '''PRAGMA foreign_keys=OFF''')
+        self.base_DB = self.connection_cursor.execute(
+            '''CREATE TABLE IF NOT EXIST collections(id INTEGER, date TEXT, cod INTEGER, name TEXT, weather_description TEXT, 
+            main_temp INTEGER, main_feels_like TEXT, main_pressure INTEGER, main_humidity TEXT, wind_speed INTEGER, 
+            clouds_all INTEGER, weather_id INTEGER)''')
+        self.database.commit()
+        self.connection_cursor.close()
 
-        def __init__(self):
-            self.development: str = '0.0.4'
-            self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
-            # API-token for access information from site openweathermap.org
-            self.token: str = TOKEN.WEATHER
-            self.response = ''
-            self.data = {}
-            self.last_word = 0
-            self.quantity_word = 0
+    def create_table(self):
+        pass
+
+
+class SearchWeather:
+    """
+    main class, send requests from openweathermap.org and get JSON-file with information
+    """
+
+    def __init__(self):
+        self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
+        # API-token for access information from site openweathermap.org
+        self.token: str = TOKEN.WEATHER
+        self.response = ''
+        self.data = {}
+        self.last_word = 0
+        self.quantity_word = 0
 
         def check_weather(self, town=None):
-            self.town: str = town
-            self.response = requests.get(self.url,
-                                         params={'q': self.town, 'appid': self.token, 'units': 'metric', 'lang': 'RU'})
-            self.data = self.response.json()
+        self.town: str = town
+        self.response = requests.get(self.url,
+                                     params={'q': self.town, 'appid': self.token, 'units': 'metric', 'lang': 'RU'})
+        self.data = self.response.json()
 
         # Return error code
         def result(self):
@@ -149,3 +165,7 @@ else:
                 804: '\U00002601'
             }
             return dict[int(icon_name)]
+
+
+if __name__ == '__main__':
+    print('This module does not need to be run as a separate process.')

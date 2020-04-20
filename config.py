@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # CONFIG FILE
 
-#Stiker Welcome
+# Stiker Welcome
 W_STICKER: str = './welcome.webp'
 
 # Sticker
@@ -33,7 +33,7 @@ MESSAGE_LEVEL = 'DEBUG'
 
 # Log file storage location
 #
-FILENAME='./log/bot.log'
+FILENAME = './log/bot.log'
 
 # File mode
 # 'r' - open for reading (default)
@@ -44,7 +44,7 @@ FILENAME='./log/bot.log'
 # 't' - text mode (default)
 # '+' - open for updating (reading and writing)
 # Possible options:
-FILEMODE='w'
+FILEMODE = 'w'
 
 # Debug message output format
 # %(asctime)s -    Human-readable time when the LogRecord was created.
@@ -54,7 +54,7 @@ FILEMODE='w'
 # %(funcName)s -   Name of function containing the logging call.
 # %(message)s -    The logged message, computed as msg % args. This is set when Formatter.format() is invoked.
 # Possible options:
-FORMAT_MESSAGE='%(asctime)s: %(levelname)s: %(funcName)s - %(message)s'
+FORMAT_MESSAGE = '%(asctime)s: %(levelname)s: %(funcName)s - %(message)s'
 
 # Time format
 # %Y - Year with century as a decimal number.
@@ -64,5 +64,7 @@ FORMAT_MESSAGE='%(asctime)s: %(levelname)s: %(funcName)s - %(message)s'
 # %M - Minute as a zero-padded decimal number.
 # %S - Second as a zero-padded decimal number.
 # Possible options:
-DATE_FORMAT='%Y-%m-%d %H:%M:%S'
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+if __name__ == '__main__':
+    print('This module does not need to be run as a separate process.')
