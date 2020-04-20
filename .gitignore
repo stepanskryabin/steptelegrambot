@@ -133,6 +133,10 @@ dmypy.json
 
 # Visual Studio Code
 .vscode
+*.code-workspace
 
 # PyCharm
 .idea
+
+# StepTelegramBot log-file
+/log
