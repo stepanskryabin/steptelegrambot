@@ -18,7 +18,7 @@ import TOKEN
 from searching_modul import SearchWeather
 
 
-bot = telebot.TeleBot(TOKEN.BOT)
+bot = TeleBot(TOKEN.BOT)
 
 # Configuring the logging module
 #logging.basicConfig(filename=config.FILENAME, filemode=config.FILEMODE, format=config.FORMAT_MESSAGE, datefmt=config.DATE_FORMAT, level=config.MESSAGE_LEVEL)
@@ -145,6 +145,6 @@ def query_text(inline_query):
 # def echo_all(message):
 #     bot.reply_to(message, message.text)
 
-
+print('StepTelegramBot is running')
 # RUN
 bot.polling(timeout=300)
