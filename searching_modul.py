@@ -32,15 +32,14 @@ class DataBase:
                                                     main_humidity TEXT,
                                                     wind_speed INTEGER,
                                                     clouds_all INTEGER,
-                                                    weather_id INTEGER)''')
+                                                    weather_id INTEGER) ''')
         self.init_base = self.connection_cursor.execute(
             '''CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY,
                                                     user_id TEXT,
                                                     first_name TEXT,
                                                     last_name TEXT,
                                                     username TEXT,
-                                                    is_bot REAL)'''
-        )
+                                                    is_bot REAL)''')
         self.connection_cursor.commit()
         self.connection_cursor.close()
 
@@ -52,21 +51,21 @@ class DataBase:
                                                     first_name TEXT,
                                                     last_name TEXT,
                                                     username TEXT,
-                                                    is_bot REAL)'''
+                                                    is_bot REAL) ''')
 
     def read_table(self, date):
         pass
-        self.read_base=self.connection_cursor.execute(
+        self.read_base = self.connection_cursor.execute(
             '''SELECT * FROM users(id,user_id,
                                     first_name,
                                     last_name,
                                     username,
-                                    is_bot)'''
+                                    is_bot) ''')
 
     def write_table(self, values):
         pass
-        self.values=values
-        self.write_base=self.connection_cursor.execute(
+        self.values = values
+        self.write_base = self.connection_cursor.execute(
             '''INSERT INTO users(user_id,
                                 first_name,
                                 last_name,
@@ -82,76 +81,76 @@ class SearchWeather:
     """
 
     def __init__(self):
-        self.url: str='https://api.openweathermap.org/data/2.5/weather?'
-        self.token: str=TOKEN.WEATHER
-        self.response=''
-        self.data={}
-        self.last_word=0
-        self.quantity_word=0
+        self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
+        self.token: str = TOKEN.WEATHER
+        self.response = ''
+        self.data = {}
+        self.last_word = 0
+        self.quantity_word = 0
 
     def check_weather(self, town=None):
-        self.town: str=town
-        self.response=requests.get(self.url,
+        self.town: str = town
+        self.response = requests.get(self.url,
                                      params={'q': self.town,
                                              'appid': self.token,
                                              'units': 'metric',
                                              'lang': 'RU'
                                              })
-        self.data=self.response.json()
+        self.data = self.response.json()
 
     # Return error code
     def result(self):
-        search_result=self.data['cod']
+        search_result = self.data['cod']
         return search_result
 
     # Return city name with replace end of word
     def city_name(self):
-        word: str=self.data['name']
+        word: str = self.data['name']
         if word[-2:] == 'ий':
-            new_word: str=word.replace(word[-2:], 'ом')
+            new_word: str = word.replace(word[-2:], 'ом')
         elif word[-1:] in ['а', 'o', 'у', 'ъ', 'ь', 'ю', 'э', 'й', 'я']:
-            new_word: str=word.replace(word[-1:], 'е')
+            new_word: str = word.replace(word[-1:], 'е')
         elif word[-1:] == 'ь':
-            new_word: str=word.replace(word[-1:], 'и')
+            new_word: str = word.replace(word[-1:], 'и')
         elif word[-1:] in ['ы', 'и']:
-            new_word: str=word.replace(word[-1:], 'ах')
+            new_word: str = word.replace(word[-1:], 'ах')
         elif word[-1:] in ['в', 'к', 'р', 'н', 'с', 'т',
                            'л', 'ш', 'щ', 'з', 'х', 'п',
                            'д', 'ж', 'ч', 'м', 'б', 'г'
                            ]:
-            new_word: str=word + 'е'
+            new_word: str = word + 'е'
         else:
-            new_word: str=word
+            new_word: str = word
         return new_word
 
     def description(self):
-        weather_description=self.data['weather'][0]['description']
+        weather_description = self.data['weather'][0]['description']
         return weather_description
 
     def temp(self):
-        main_temp=self.data['main']['temp']
+        main_temp = self.data['main']['temp']
         return main_temp
 
     def feels(self):
-        feels_like=self.data['main']['feels_like']
+        feels_like = self.data['main']['feels_like']
         return feels_like
 
     # Return pressure and converting Pascal to mercury pole millimeters
     def pressure(self):
-        pa: int=self.data['main']['pressure']
-        mpm=(pa * 100) * config.CONSTANT_PA_TO_MPM
+        pa: int = self.data['main']['pressure']
+        mpm = (pa * 100) * config.CONSTANT_PA_TO_MPM
         return int(mpm)
 
     def humidity(self):
-        main_humidity=self.data['main']['humidity']
+        main_humidity = self.data['main']['humidity']
         return main_humidity
 
     def speed_wing(self):
-        speed=self.data['wind']['speed']
+        speed = self.data['wind']['speed']
         return speed
 
     def clouds(self):
-        all_clouds=self.data['clouds']['all']
+        all_clouds = self.data['clouds']['all']
         return all_clouds
 
     def version(self):
@@ -159,8 +158,8 @@ class SearchWeather:
 
     # Return code of emoji from weather description
     def insert_emoji(self):
-        icon_name=self.data['weather'][0]['id']
-        dict={
+        icon_name = self.data['weather'][0]['id']
+        dict = {
             200: '\U00002744',
             201: '\U000026A1',
             202: '\U000026A1',
