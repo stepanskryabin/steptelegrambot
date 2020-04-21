@@ -20,9 +20,6 @@ from searching_modul import SearchWeather
 
 bot = TeleBot(TOKEN.BOT)
 
-# Configuring the logging module
-#logging.basicConfig(filename=config.FILENAME, filemode=config.FILEMODE, format=config.FORMAT_MESSAGE, datefmt=config.DATE_FORMAT, level=config.MESSAGE_LEVEL)
-
 # Create a new SearchWeather object
 w = SearchWeather()
 
@@ -112,8 +109,8 @@ def command_handler(message: Message):
                          f"Облачность: <b>{w.clouds()} %</b> \n"
                          f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
     elif w.result() == '404':
-        bot.send_message(message.chat.id, f"\U0001F6AB Такой город <s>не существует</s>. Возможно вы допустили ошибку?",
-                         parse_mode='HTML')
+        bot.send_message(message.chat.id, f"\U0001F6AB Такой город
+                         < s > не существует < /s > . Возможно вы допустили ошибку?", parse_mode='HTML')
     else:
         bot.send_message(
             message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
@@ -131,10 +128,10 @@ def sticker_handler(message: Message):
 @bot.inline_handler(lambda query: query.query in ['Ки', 'Ki', 'ки', 'ki'])
 def query_text(inline_query):
     try:
-        kirov = telebot.types.InlineQueryResultArticle(
-            '1', 'Киров', telebot.types.InputTextMessageContent('Киров'))
-        kirovochepetsk = telebot.types.InlineQueryResultArticle(
-            '2', 'Кирово-Чепецк', telebot.types.InputTextMessageContent('Кирово-Чепецк'))
+        kirov = InlineQueryResultArticle(
+            '1', 'Киров', InputTextMessageContent('Киров'))
+        kirovochepetsk = InlineQueryResultArticle(
+            '2', 'Кирово-Чепецк', InputTextMessageContent('Кирово-Чепецк'))
         bot.answer_inline_query(inline_query.id, [kirov, kirovochepetsk])
     except Exception as e:
         print(e)
