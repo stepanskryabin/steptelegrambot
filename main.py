@@ -109,8 +109,8 @@ def command_handler(message: Message):
                          f"Облачность: <b>{w.clouds()} %</b> \n"
                          f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
     elif w.result() == '404':
-        bot.send_message(message.chat.id, f"\U0001F6AB Такой город
-                         < s > не существует < /s > . Возможно вы допустили ошибку?", parse_mode='HTML')
+        bot.send_message(
+            message.chat.id, f"\U0001F6AB Такой город <s> не существует </s> . Возможно вы допустили ошибку?", parse_mode='HTML')
     else:
         bot.send_message(
             message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
