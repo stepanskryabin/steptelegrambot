@@ -4,74 +4,38 @@
 # Search weather on the openweathermap.org
 
 import requests
-import sqlite3
+import sqlobject
+from os import path
 
 import config
 import TOKEN
 
 
-class DataBase:
+class DataBase(sqlobject):
     """
-    Work with sqlite database
+    Work with sqlite database via SQLObject
     """
 
     def __init__(self):
-        self.database = sqlite3.connect('bot.db')
-        self.connection_cursor = self.database.cursor()
-        self.pragma = self.connection_cursor.execute(
-            '''PRAGMA foreign_keys=OFF''')
-        self.init_base = self.connection_cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS collections(id INTEGER PRIMARY KEY,
-                                                    date TEXT,
-                                                    cod INTEGER,
-                                                    name TEXT,
-                                                    weather_description TEXT,
-                                                    main_temp INTEGER,
-                                                    main_feels_like TEXT,
-                                                    main_pressure INTEGER,
-                                                    main_humidity TEXT,
-                                                    wind_speed INTEGER,
-                                                    clouds_all INTEGER,
-                                                    weather_id INTEGER) ''')
-        self.init_base = self.connection_cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY,
-                                                    user_id TEXT,
-                                                    first_name TEXT,
-                                                    last_name TEXT,
-                                                    username TEXT,
-                                                    is_bot REAL)''')
-        self.connection_cursor.commit()
-        self.connection_cursor.close()
+        base_path = path.abspath('bot_database.db')
+        self.database = 'sqlite:/:' + base_path
+        self.connection = sqlobject.connectionForURI(self.database)
+        sqlobject.sqlhub.processConnection = self.connection
 
-    def create_table(self, name, *kargs):
+    def create_users_table(self, name, *kwargs):
         pass
-        self.create_base = self.connection_cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY,
-                                                    user_id TEXT,
-                                                    first_name TEXT,
-                                                    last_name TEXT,
-                                                    username TEXT,
-                                                    is_bot REAL) ''')
 
-    def read_table(self, date):
+    def read_users_table(self, user_id):
         pass
-        self.read_base = self.connection_cursor.execute(
-            '''SELECT * FROM users(id,user_id,
-                                    first_name,
-                                    last_name,
-                                    username,
-                                    is_bot) ''')
 
-    def write_table(self, values):
+    def read_collections_table(self, user_id):
         pass
-        self.values = values
-        self.write_base = self.connection_cursor.execute(
-            '''INSERT INTO users(user_id,
-                                first_name,
-                                last_name,
-                                username,
-                                is_bot)
-                VALUES (?)''', self.values)
+
+    def write_users_table(self, values):
+        pass
+
+    def write_collections_table(self, values):
+        pass
 
 
 class SearchWeather:

@@ -26,45 +26,31 @@ w = SearchWeather()
 # Return information about StepTelegramBot
 @bot.message_handler(commands=['start'])
 @bot.edited_message_handler(commands=['start'])
-def command_handler(message: Message):
-    # Insert sticker in message text
-    # sti = open(config.W_STICKER, 'rb')
-    # bot.send_sticker(message.chat.id, sti)
-    bot.send_message(message.chat.id, "Привет, я <b>Погодный бот!</b>\n"
-                                      "Набери имя города и я поищу информацию о погоде в нём.\n"
-                                      "Если нужна более подробная информация жми /help", parse_mode='HTML')
+def handler_command_start(message: Message):
+    bot.send_message(message.chat.id, config.START_MESSAGE, parse_mode='HTML')
     return
 
 
 # Return help information
 @bot.message_handler(commands=['help'])
 @bot.edited_message_handler(commands=['help'])
-def command_handler(message: Message):
-    if message.location is not None:
-        bot.send_message(message.chat.id, f'Этот бот помогает узнать погоду в городе {message.location}\n'
-                                          'Введите название города, непример: Киров и я дам вам ответ',
-                         parse_mode='HTML')
-    else:
-        bot.send_message(message.chat.id, f'Этот бот помогает узнать погоду в вашем городе \n'
-                                          'Введите название города, непример: Москва и я дам ответ.\n'
-                                          'Ещё у меня есть встроенные команды для поиска погоды в Кирове и Кирово-Чепецке.\n'
-                                          'Просто набери команду /chepetsk или /kirov', parse_mode='HTML')
+def handler_command_help(message: Message):
+    bot.send_message(message.chat.id, config.HELP_MESSAGE, parse_mode='HTML')
     return
 
 
 # Return version for StepTelegramBot
 @bot.message_handler(commands=['version'])
 @bot.edited_message_handler(commands=['version'])
-def command_handler(message: Message):
-    #    logging.debug(f'Bot version request={w.version()}')
+def handler_command_version(message: Message):
     bot.send_message(
-        message.chat.id, f"Версия бота: {w.version()}", parse_mode='HTML')
+        message.chat.id, f"Версия бота: {__version__}", parse_mode='HTML')
     return
 
 
 @bot.message_handler(commands=['chepetsk'])
 @bot.edited_message_handler(commands=['chepetsk'])
-def command_handler(message: Message):
+def handler_command_chepetsk(message: Message):
     w.check_weather(town='Kirovo-Chepetsk')
     bot.send_message(message.chat.id, f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
                                       f"Температура: <b>{w.temp()} C</b>. \n"
@@ -79,7 +65,7 @@ def command_handler(message: Message):
 # Return weather in fixed city Kirov
 @bot.message_handler(commands=['kirov'])
 @bot.edited_message_handler(commands=['kirov'])
-def command_handler(message: Message):
+def handler_command_kirov(message: Message):
     w.check_weather(town='Kirov')
     bot.send_message(message.chat.id, f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
                                       f"Температура: <b>{w.temp()} C</b>. \n"
@@ -94,11 +80,9 @@ def command_handler(message: Message):
 # Return weather from city
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
-def command_handler(message: Message):
+def handler_command_text(message: Message):
     city_name = translit(message.text, RussianInternationalPassport1997)
-#    logging.debug(f'City name={city_name}')
     w.check_weather(town=city_name)
-#    logging.debug(f'Value w.result={w.result()}')
     if w.result() == 200:
         bot.send_message(message.chat.id,
                          f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
@@ -110,7 +94,7 @@ def command_handler(message: Message):
                          f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
     elif w.result() == '404':
         bot.send_message(
-            message.chat.id, f"\U0001F6AB Такой город <s> не существует </s> . Возможно вы допустили ошибку?", parse_mode='HTML')
+            message.chat.id, f"\U0001F6AB Такой город <s> не существует </s>. Возможно вы допустили ошибку?", parse_mode='HTML')
     else:
         bot.send_message(
             message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
@@ -119,7 +103,7 @@ def command_handler(message: Message):
 
 # Return sticker
 @bot.message_handler(content_types=['sticker'])
-def sticker_handler(message: Message):
+def handler_sticker(message: Message):
     bot.send_sticker(message.chat.id, config.STICKER_ID)
     return
 
