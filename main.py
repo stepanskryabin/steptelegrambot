@@ -4,7 +4,7 @@
 # NICKNAME = StepTelegramBot
 # Autor: Stepan Skriabin
 # email: stepan.skrjabin@gmail.com
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 from telebot import TeleBot
 from telebot.types import Message
@@ -16,6 +16,7 @@ from translitua import RussianInternationalPassport1997
 import config
 import os
 from botsearch import SearchWeather
+from botbase import Users
 
 
 bot = TeleBot(os.getenv('BOT_API'))
@@ -43,9 +44,36 @@ def handler_command_help(message: Message):
 @bot.message_handler(commands=['version'])
 @bot.edited_message_handler(commands=['version'])
 def handler_command_version(message: Message):
+    # print(dir(message.chat))
+    # print(message.from_user)
     bot.send_message(
         message.chat.id, f"Версия бота: {__version__}", parse_mode='HTML')
     return
+
+# Registration
+@bot.message_handler(commands=['register'])
+@bot.edited_message_handler(commands=['register'])
+def handler_command_register(message: Message):
+    table_users = Users
+    if table_users.tableExists() is False:
+        table_users.createTable()
+    else:
+        pass
+    is_user_register = table_users.select(
+        Users.q.userId == message.from_user.id)
+    check = bool(is_user_register.count())
+    if check is True:
+        bot.send_message(message.chat.id, 'Такой пользователь уже существует')
+    elif check is False:
+        table_users(userId=message.from_user.id,
+                    userFirstname=message.from_user.first_name,
+                    userLastname=message.from_user.last_name,
+                    userName=message.from_user.username,
+                    languageCode=message.from_user.language_code,
+                    isBot=message.from_user.is_bot)
+        bot.send_message(message.chat.id, 'Пользователь создан')
+    else:
+        bot.send_message(message.chat.id, 'Что-то пошло не так')
 
 
 @bot.message_handler(commands=['chepetsk'])

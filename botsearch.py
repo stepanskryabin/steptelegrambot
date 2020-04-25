@@ -11,7 +11,7 @@ import config
 
 class SearchWeather:
     """
-    main class, send requests from openweathermap.org and
+    Send requests from openweathermap.org and
     get JSON-file with information
     """
 
