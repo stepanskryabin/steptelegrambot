@@ -8,18 +8,18 @@ from os import path
 
 
 base_path = path.abspath('bot_database.db')
-database = 'sqlite:/:' + base_path
+database = 'sqlite:' + base_path
 connection = orm.connectionForURI(database)
 orm.sqlhub.processConnection = connection
 
 
 class Users(orm.SQLObject):
-    userId = orm.IntCol()
-    isBot = orm.BoolCol()
+    userId = orm.IntCol(unique=True)
     userFirstname = orm.StringCol()
     userLastname = orm.StringCol()
-    useName = orm.StringCol()
+    userName = orm.StringCol()
     languageCode = orm.StringCol()
+    isBot = orm.BoolCol()
 
 
 class CurrentWeather(orm.SQLObject):
@@ -35,11 +35,7 @@ class HourlyWeather(orm.SQLObject):
 
 
 class CityList(orm.SQLObject):
-    cityId = orm.IntCol()
-    cityName = orm.UnicodeCol()
-    country = orm.StringCol()
-    coordLon = orm.FloatCol()
-    coordLat = orm.FloatCol()
+    pass
 
 
 if __name__ == '__main__':

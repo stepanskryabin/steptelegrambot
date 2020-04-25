@@ -5,5 +5,4 @@ The bot asks for information at www.openweathermap.org.
 
 The result of the request is processed and displayed in the message.
 
-The OpenWeatherMap.org API access token and the token issued by BotFather are specified in the bottleneck environment variables, 
-where WEATHER_API - OpenWeatherMap.org token, OT_API - BotFather token.
+Token from openweathermap.org and token from BotFather (by telegram) are specified in environment variables, where WEATHER_API - OpenWeatherMap.org token, BOT_API - Telegram token.

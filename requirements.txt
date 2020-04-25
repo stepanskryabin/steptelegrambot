@@ -1,3 +1,4 @@
 requests
 pyTelegramBotApi
 translitua
+sqlobject
