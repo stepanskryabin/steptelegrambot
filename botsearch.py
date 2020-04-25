@@ -6,6 +6,7 @@
 import requests
 import os
 import config
+# import botbase
 
 
 class SearchWeather:
