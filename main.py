@@ -15,7 +15,7 @@ from translitua import RussianInternationalPassport1997
 
 import config
 import os
-from .search import SearchWeather
+from botsearch import SearchWeather
 
 
 bot = TeleBot(os.getenv('BOT_API'))
