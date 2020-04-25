@@ -8,13 +8,6 @@ W_STICKER: str = './welcome.webp'
 # Sticker
 STICKER_ID: str = 'CAACAgIAAxkBAANhXkkWbDoQR15v86aV-lx0S5nrjfkAAqQAAwLV8A8r2CzEaz_SZBgE'
 
-# City
-TOWN_ID: str = 'Kirovo-Chepetsk,RU'
-
-# Configuration url's where Bot taken information about weather
-IMG_URL_START: str = 'https://openweathermap.org/img/wn/'
-IMG_URL_END: str = '@2x.png'
-
 # Pascal to mercury pole millimeters conversion constant
 CONSTANT_PA_TO_MPM: float = 7.5006E-3
 
@@ -65,6 +58,17 @@ FORMAT_MESSAGE = '%(asctime)s: %(levelname)s: %(funcName)s - %(message)s'
 # %S - Second as a zero-padded decimal number.
 # Possible options:
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+# Message
+START_MESSAGE = "Привет, я <b>Погодный бот!</b>\n"
+"Набери имя города и я поищу информацию о погоде в нём.\n"
+"Если нужна более подробная информация жми /help"
+
+HELP_MESSAGE = "Этот бот помогает узнать погоду в вашем городе \n"
+"Введите название города, непример: Москва и я дам ответ.\n"
+"Ещё у меня есть встроенные команды для поиска погоды в Кирове и Кирово-Чепецке.\n"
+"Просто набери команду /chepetsk или /kirov"
+
 
 if __name__ == '__main__':
     print('This module does not need to be run as a separate process.')

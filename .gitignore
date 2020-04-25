@@ -140,3 +140,6 @@ dmypy.json
 
 # StepTelegramBot log-file
 /log
+
+# Sqlite stuff
+*.db
