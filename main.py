@@ -14,11 +14,11 @@ from translitua import translit
 from translitua import RussianInternationalPassport1997
 
 import config
-import TOKEN
-from searching_modul import SearchWeather
+import os
+from .search import SearchWeather
 
 
-bot = TeleBot(TOKEN.BOT)
+bot = TeleBot(os.getenv('BOT_API'))
 
 # Create a new SearchWeather object
 w = SearchWeather()
