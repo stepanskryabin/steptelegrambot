@@ -6,6 +6,8 @@
 # email: stepan.skrjabin@gmail.com
 __version__ = '0.0.6'
 
+import os
+
 from telebot import TeleBot
 from telebot.types import Message
 from telebot.types import InlineQueryResultArticle
@@ -13,8 +15,7 @@ from telebot.types import InputTextMessageContent
 from translitua import translit
 from translitua import RussianInternationalPassport1997
 
-import config
-import os
+import botconfig
 from botsearch import SearchWeather
 from botbase import Users
 
@@ -28,7 +29,8 @@ w = SearchWeather()
 @bot.message_handler(commands=['start'])
 @bot.edited_message_handler(commands=['start'])
 def handler_command_start(message: Message):
-    bot.send_message(message.chat.id, config.START_MESSAGE, parse_mode='HTML')
+    bot.send_message(message.chat.id, botconfig.START_MESSAGE,
+                     parse_mode='HTML')
     return
 
 
@@ -36,7 +38,8 @@ def handler_command_start(message: Message):
 @bot.message_handler(commands=['help'])
 @bot.edited_message_handler(commands=['help'])
 def handler_command_help(message: Message):
-    bot.send_message(message.chat.id, config.HELP_MESSAGE, parse_mode='HTML')
+    bot.send_message(message.chat.id, botconfig.HELP_MESSAGE,
+                     parse_mode='HTML')
     return
 
 
@@ -51,8 +54,8 @@ def handler_command_version(message: Message):
     return
 
 # Registration
-@bot.message_handler(commands=['register'])
-@bot.edited_message_handler(commands=['register'])
+@bot.message_handler(commands=['reguser'])
+@bot.edited_message_handler(commands=['reguser'])
 def handler_command_register(message: Message):
     table_users = Users
     if table_users.tableExists() is False:
@@ -63,7 +66,8 @@ def handler_command_register(message: Message):
         Users.q.userId == message.from_user.id)
     check = bool(is_user_register.count())
     if check is True:
-        bot.send_message(message.chat.id, 'Такой пользователь уже существует')
+        bot.send_message(message.chat.id, f'Ваш ID: {message.from_user.id}'
+                         'Пользователь с таким ID уже зарегистрирован')
     elif check is False:
         table_users(userId=message.from_user.id,
                     userFirstname=message.from_user.first_name,
@@ -71,7 +75,37 @@ def handler_command_register(message: Message):
                     userName=message.from_user.username,
                     languageCode=message.from_user.language_code,
                     isBot=message.from_user.is_bot)
-        bot.send_message(message.chat.id, 'Пользователь создан')
+        bot.send_message(
+            message.chat.id, f'Пользователь: {message.from_user.username}'
+            f'с ID: {message.from_user.id} усешно создан')
+    else:
+        bot.send_message(message.chat.id, 'Что-то пошло не так')
+
+
+@bot.message_handler(commands=['deluser'])
+@bot.edited_message_handler(commands=['deluser'])
+def handler_command_register(message: Message):
+    table_users = Users
+    if table_users.tableExists() is False:
+        table_users.createTable()
+    else:
+        pass
+    is_user_register = table_users.select(
+        Users.q.userId == message.from_user.id)
+    check = bool(is_user_register.count())
+    if check is True:
+        bot.send_message(message.chat.id, f'Ваш ID: {message.from_user.id}'
+                         'Пользователь с таким ID уже зарегистрирован')
+    elif check is False:
+        table_users(userId=message.from_user.id,
+                    userFirstname=message.from_user.first_name,
+                    userLastname=message.from_user.last_name,
+                    userName=message.from_user.username,
+                    languageCode=message.from_user.language_code,
+                    isBot=message.from_user.is_bot)
+        bot.send_message(
+            message.chat.id, f'Пользователь: {message.from_user.username}'
+            f'с ID: {message.from_user.id} усешно создан')
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так')
 
@@ -132,7 +166,7 @@ def handler_command_text(message: Message):
 # Return sticker
 @bot.message_handler(content_types=['sticker'])
 def handler_sticker(message: Message):
-    bot.send_sticker(message.chat.id, config.STICKER_ID)
+    bot.send_sticker(message.chat.id, botconfig.STICKER_ID)
     return
 
 

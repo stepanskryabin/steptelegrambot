@@ -4,12 +4,10 @@
 # Create and work with database
 
 import sqlobject as orm
-from os import path
+import botconfig
 
 
-base_path = path.abspath('bot_database.db')
-database = 'sqlite:' + base_path
-connection = orm.connectionForURI(database)
+connection = orm.connectionForURI(botconfig.OTHERSQL)
 orm.sqlhub.processConnection = connection
 
 
@@ -23,7 +21,31 @@ class Users(orm.SQLObject):
 
 
 class CurrentWeather(orm.SQLObject):
-    pass
+    cityId = orm.IntCol()
+    cityName = orm.StringCol()
+    lon = orm.FloatCol()
+    lat = orm.FloatCol()
+    dateTime = orm.IntCol()
+    weatherId = orm.IntCol()
+    weatherMain = orm.StringCol()
+    weatherDescription = orm.StringCol()
+    weatherIcon = orm.StringCol()
+    base = orm.StringCol()
+    mainTemp = orm.FloatCol()
+    mainFeelsLike = orm.FloatCol()
+    mainTempMin = orm.FloatCol()
+    mainTempMax = orm.FloatCol()
+    mainPressure = orm.FloatCol()
+    mainHumidity = orm.FloatCol()
+    visibility = orm.FloatCol()
+    windSpeed = orm.FloatCol()
+    cloudsAll = orm.IntCol()
+    sysType = orm.IntCol()
+    sysId = orm.IntCol()
+    sysCountry = orm.StringCol()
+    sysSunrise = orm.IntCol()
+    sysSunset = orm.IntCol()
+    timezone = orm.IntCol()
 
 
 class DailyWeather(orm.SQLObject):
@@ -35,6 +57,16 @@ class HourlyWeather(orm.SQLObject):
 
 
 class CityList(orm.SQLObject):
+    cityId = orm.IntCol()
+    cityName = orm.StringCol()
+    state = orm.StringCol(default=None)
+    country = orm.StringCol()
+    lon = orm.FloatCol()
+    lat = orm.FloatCol()
+
+
+def city_database_fill():
+    # with open('./lib/city.list.json', r)
     pass
 
 
