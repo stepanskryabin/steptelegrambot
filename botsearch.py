@@ -5,8 +5,10 @@
 
 import requests
 import os
-import config
-# import botbase
+
+import botconfig
+from botbase import CityList
+from botbase import CurrentWeather
 
 
 class SearchWeather:
@@ -16,24 +18,70 @@ class SearchWeather:
     """
 
     def __init__(self):
-        self.url: str = 'https://api.openweathermap.org/data/2.5/weather?'
+        self.url: str = 'https://api.openweathermap.org/data/2.5/'
+        self.api_call_weather = 'weather?'
+        self.api_call_hourly = 'onecall?'
         self.token: str = os.getenv('WEATHER_API')
         self.response = ''
         self.data = {}
         self.last_word = 0
         self.quantity_word = 0
 
-    def check_weather(self, town=None):
-        self.town: str = town
-        self.response = requests.get(self.url,
-                                     params={'q': self.town,
+    def check_weather(self, town='Moscow'):
+        url = self.url + self.api_call_weather
+        self.response = requests.get(url,
+                                     params={'q': town,
                                              'appid': self.token,
                                              'units': 'metric',
                                              'lang': 'RU'
                                              })
         self.data = self.response.json()
+        table_current_weather = CurrentWeather
+        if table_current_weather.tableExists() is False:
+            table_current_weather.createTable()
+        if self.data['cod'] == 200:
+            table_current_weather(
+                cityId=self.data['id'],
+                cityName=self.data['name'],
+                lon=self.data['coord']['lon'],
+                lat=self.data['coord']['lat'],
+                dateTime=self.data['dt'],
+                weatherId=self.data['weather'][0]['id'],
+                weatherMain=self.data['weather'][0]['main'],
+                weatherDescription=self.data['weather'][0]['description'],
+                weatherIcon=self.data['weather'][0]['icon'],
+                base=self.data['base'],
+                mainTemp=self.data['main']['temp'],
+                mainFeelsLike=self.data['main']['feels_like'],
+                mainTempMin=self.data['main']['temp_min'],
+                mainTempMax=self.data['main']['temp_max'],
+                mainPressure=self.data['main']['pressure'],
+                mainHumidity=self.data['main']['humidity'],
+                visibility=self.data['visibility'],
+                windSpeed=self.data['wind']['speed'],
+                cloudsAll=self.data['clouds']['all'],
+                sysType=self.data['sys']['type'],
+                sysId=self.data['sys']['id'],
+                sysCountry=self.data['sys']['country'],
+                sysSunrise=self.data['sys']['sunrise'],
+                sysSunset=self.data['sys']['sunset'],
+                timezone=self.data['timezone']
+            )
+        else:
+            pass
 
-    # Return error code
+    def check_hourly_and_daily(self, town='Moscow'):
+        table = CityList.select(CityList.q.name == town)
+        row_id = int(table.min())
+        column = CityList.get(row_id)
+        lon = column.lon
+        lat = column.lat
+        url = self.url + self.api_call_hourly
+        self.response = requests.get(url, params={'lon': lon,
+                                                  'lat': lat,
+                                                  'appid': self.token})
+        pass
+
     def result(self):
         search_result = self.data['cod']
         return search_result
@@ -73,7 +121,7 @@ class SearchWeather:
     # Return pressure and converting Pascal to mercury pole millimeters
     def pressure(self):
         pa: int = self.data['main']['pressure']
-        mpm = (pa * 100) * config.CONSTANT_PA_TO_MPM
+        mpm = (pa * 100) * botconfig.CONSTANT_PA_TO_MPM
         return int(mpm)
 
     def humidity(self):
@@ -87,9 +135,6 @@ class SearchWeather:
     def clouds(self):
         all_clouds = self.data['clouds']['all']
         return all_clouds
-
-    def version(self):
-        return self.development
 
     # Return code of emoji from weather description
     def insert_emoji(self):
