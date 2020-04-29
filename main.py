@@ -4,7 +4,7 @@
 # NICKNAME = StepTelegramBot
 # Autor: Stepan Skriabin
 # email: stepan.skrjabin@gmail.com
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 import os
 
@@ -38,27 +38,27 @@ def handler_command_start(message: Message):
 @bot.message_handler(commands=['help'])
 @bot.edited_message_handler(commands=['help'])
 def handler_command_help(message: Message):
-    bot.send_message(message.chat.id, botconfig.HELP_MESSAGE,
+    bot.send_message(message.chat.id,
+                     botconfig.HELP_MESSAGE.format(__version__),
                      parse_mode='HTML')
     return
 
 
 # Return version for StepTelegramBot
-@bot.message_handler(commands=['version'])
-@bot.edited_message_handler(commands=['version'])
+@bot.message_handler(commands=['register'])
+@bot.edited_message_handler(commands=['register'])
 def handler_command_version(message: Message):
-    # print(dir(message.chat))
-    # print(message.from_user)
-    bot.send_message(
-        message.chat.id, f"Версия бота: {__version__}", parse_mode='HTML')
+    bot.send_message(message.chat.id,
+                     botconfig.REGISTER_MESSAGE,
+                     parse_mode='HTML')
     return
 
 # Registration
 @bot.message_handler(commands=['reguser'])
 @bot.edited_message_handler(commands=['reguser'])
-def handler_command_register(message: Message):
+def handler_command_adduser(message: Message):
     table_users = Users
-    if table_users.tableExists() is False:
+    if bool(table_users.tableExists()) is False:
         table_users.createTable()
     else:
         pass
@@ -66,8 +66,9 @@ def handler_command_register(message: Message):
         Users.q.userId == message.from_user.id)
     check = bool(is_user_register.count())
     if check is True:
-        bot.send_message(message.chat.id, f'Ваш ID: {message.from_user.id}'
-                         'Пользователь с таким ID уже зарегистрирован')
+        bot.send_message(
+            message.chat.id, f'Пользователь: {message.from_user.username} '
+            f'с ID {message.from_user.id} уже зарегистрирован.')
     elif check is False:
         table_users(userId=message.from_user.id,
                     userFirstname=message.from_user.first_name,
@@ -76,38 +77,33 @@ def handler_command_register(message: Message):
                     languageCode=message.from_user.language_code,
                     isBot=message.from_user.is_bot)
         bot.send_message(
-            message.chat.id, f'Пользователь: {message.from_user.username}'
-            f'с ID: {message.from_user.id} усешно создан')
+            message.chat.id, f'Пользователь: {message.from_user.username} '
+            f'с ID: {message.from_user.id} создан.')
     else:
         bot.send_message(message.chat.id, 'Что-то пошло не так')
 
 
 @bot.message_handler(commands=['deluser'])
 @bot.edited_message_handler(commands=['deluser'])
-def handler_command_register(message: Message):
+def handler_command_deluser(message: Message):
     table_users = Users
     if table_users.tableExists() is False:
-        table_users.createTable()
-    else:
         pass
-    is_user_register = table_users.select(
-        Users.q.userId == message.from_user.id)
-    check = bool(is_user_register.count())
-    if check is True:
-        bot.send_message(message.chat.id, f'Ваш ID: {message.from_user.id}'
-                         'Пользователь с таким ID уже зарегистрирован')
-    elif check is False:
-        table_users(userId=message.from_user.id,
-                    userFirstname=message.from_user.first_name,
-                    userLastname=message.from_user.last_name,
-                    userName=message.from_user.username,
-                    languageCode=message.from_user.language_code,
-                    isBot=message.from_user.is_bot)
-        bot.send_message(
-            message.chat.id, f'Пользователь: {message.from_user.username}'
-            f'с ID: {message.from_user.id} усешно создан')
     else:
-        bot.send_message(message.chat.id, 'Что-то пошло не так')
+        is_user_register = table_users.select(
+            Users.q.userId == message.from_user.id)
+        check = bool(is_user_register.count())
+        if check is True:
+            table_users.delete(is_user_register.min('id'))
+            bot.send_message(message.chat.id,
+                             f'Пользователь: {message.from_user.username} '
+                             f'с ID: {message.from_user.id} удалён.')
+        elif check is False:
+            bot.send_message(message.chat.id,
+                             f'Пользователя: {message.from_user.username} '
+                             f'с ID: {message.from_user.id} не существует.')
+        else:
+            bot.send_message(message.chat.id, 'Что-то пошло не так')
 
 
 @bot.message_handler(commands=['chepetsk'])
@@ -190,4 +186,4 @@ def query_text(inline_query):
 
 print('StepTelegramBot is running')
 # RUN
-bot.polling(timeout=300)
+bot.polling(timeout=900)

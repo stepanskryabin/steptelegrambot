@@ -15,9 +15,11 @@ CONSTANT_PA_TO_MPM: float = 7.5006E-3
 
 # Configuring database access
 # SQLite3
-SQLITE = 'sqlite:' + os.path.abspath('bot_database.db')
+LOCAL_SQLITE = 'sqlite:' + os.path.abspath('bot_database.db')
 # PostgreSQL
-OTHERSQL = os.getenv('DATABASE_URL')
+LOCAL_POSTGRESQL = 'postgres://testdb:123456@127.0.0.1/test_telegrambot'
+# PostgreSQL
+ONLINE_POSTGRESQL = os.getenv('DATABASE_URL')
 
 
 # Logging module settings
@@ -68,14 +70,23 @@ FORMAT_MESSAGE = '%(asctime)s: %(levelname)s: %(funcName)s - %(message)s'
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 # Message
-START_MESSAGE = "Привет, я <b>Погодный бот!</b>\n"
-"Набери имя города и я поищу информацию о погоде в нём.\n"
-"Если нужна более подробная информация жми /help"
+START_MESSAGE = "Привет, я <b>Погодный бот!</b>\
+    \nНапиши мне имя города, а я поищу информацию о погоде в нём.\
+    \nЕсли нужна более подробная информация жми /help"
 
-HELP_MESSAGE = "Этот бот помогает узнать погоду в вашем городе \n"
-"Введите название города, непример: Москва и я дам ответ.\n"
-"Ещё у меня есть встроенные команды для поиска погоды в Кирове и Кирово-Чепецке.\n"
-"Просто набери команду /chepetsk или /kirov"
+HELP_MESSAGE = "Этот бот помогает узнать погоду в твоём городе.\
+    \nВведи название города, например: <b>Москва</b>\
+    \nЕсли хочешь получать постоянные прогнозы, или персонифицировать\
+    \nпрогноз, необходимо зарегистрироваться.\
+    \nДля подробной информации о регистарции жми /register\
+    \n\
+    \nВерсия бота: {}"
+
+REGISTER_MESSAGE = "\n Для регистрации аккаунта нажмите:\
+    \n/reguser - после регистрации бот сохранит следующие данные:\
+    \n\
+    \nДля удаления аккаунта нажмите:\
+    \n/deluser - ВНИМАНИЕ: будут удалены все настройки и личные данные!"
 
 
 if __name__ == '__main__':

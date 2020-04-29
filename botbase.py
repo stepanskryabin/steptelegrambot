@@ -6,12 +6,24 @@
 import sqlobject as orm
 import botconfig
 
+"""
+    Choose the option to connect to the database, where:
+    LOCAL_SQLITE: the bot_database.db file will be created
+    in the local directory
+    LOCAL_POSTGRESQL: a connection to a local server will be made
+    ONLINE_POSTGRESQL: a connection will be made to a server hosted
+    on the Internet.
 
-connection = orm.connectionForURI(botconfig.OTHERSQL)
+    The settings are in the file botconfig.py.
+"""
+connection = orm.connectionForURI(botconfig.ONLINE_POSTGRESQL)
 orm.sqlhub.processConnection = connection
 
 
 class Users(orm.SQLObject):
+    """
+        Create a table where we store user registration data.
+    """
     userId = orm.IntCol(unique=True)
     userFirstname = orm.StringCol()
     userLastname = orm.StringCol()
@@ -21,6 +33,10 @@ class Users(orm.SQLObject):
 
 
 class CurrentWeather(orm.SQLObject):
+    """
+        Create a table where we store weather results at the time of
+        user request
+    """
     cityId = orm.IntCol()
     cityName = orm.StringCol()
     lon = orm.FloatCol()
