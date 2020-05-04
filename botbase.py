@@ -14,7 +14,7 @@ import botconfig
     ONLINE_POSTGRESQL: a connection will be made to a server hosted
     on the Internet.
 
-    The settings are in the file botconfig.py.
+    The settings are in the file botconfig.py
 """
 connection = orm.connectionForURI(botconfig.ONLINE_POSTGRESQL)
 orm.sqlhub.processConnection = connection
@@ -84,6 +84,42 @@ class CityList(orm.SQLObject):
 def city_database_fill():
     # with open('./lib/city.list.json', r)
     pass
+
+
+def write_current_weather(**kwargs):
+    data = kwargs
+    CurrentWeather.createTable(ifNotExist=True)
+    if data['cod'] == 200:
+        CurrentWeather(
+            cityId=data['id'],
+            cityName=data['name'],
+            lon=data['coord']['lon'],
+            lat=data['coord']['lat'],
+            dateTime=data['dt'],
+            weatherId=data['weather'][0]['id'],
+            weatherMain=data['weather'][0]['main'],
+            weatherDescription=data['weather'][0]['description'],
+            weatherIcon=data['weather'][0]['icon'],
+            base=data['base'],
+            mainTemp=data['main']['temp'],
+            mainFeelsLike=data['main']['feels_like'],
+            mainTempMin=data['main']['temp_min'],
+            mainTempMax=data['main']['temp_max'],
+            mainPressure=data['main']['pressure'],
+            mainHumidity=data['main']['humidity'],
+            visibility=data['visibility'],
+            windSpeed=data['wind']['speed'],
+            cloudsAll=data['clouds']['all'],
+            sysType=data['sys']['type'],
+            sysId=data['sys']['id'],
+            sysCountry=data['sys']['country'],
+            sysSunrise=data['sys']['sunrise'],
+            sysSunset=data['sys']['sunset'],
+            timezone=data['timezone']
+        )
+        print('write_current_weather = OK')
+    elif data == '400':
+        print('No such city has been found')
 
 
 if __name__ == '__main__':

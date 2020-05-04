@@ -18,6 +18,8 @@ from translitua import RussianInternationalPassport1997
 import botconfig
 from botsearch import SearchWeather
 from botbase import Users
+from botbase import write_current_weather
+from botbase import CurrentWeather
 
 
 bot = TeleBot(os.getenv('BOT_API'))
@@ -57,12 +59,8 @@ def handler_command_version(message: Message):
 @bot.message_handler(commands=['reguser'])
 @bot.edited_message_handler(commands=['reguser'])
 def handler_command_adduser(message: Message):
-    table_users = Users
-    if bool(table_users.tableExists()) is False:
-        table_users.createTable()
-    else:
-        pass
-    is_user_register = table_users.select(
+    Users.createTable(ifNotExist=True)
+    is_user_register = Users.select(
         Users.q.userId == message.from_user.id)
     check = bool(is_user_register.count())
     if check is True:
@@ -70,12 +68,12 @@ def handler_command_adduser(message: Message):
             message.chat.id, f'Пользователь: {message.from_user.username} '
             f'с ID {message.from_user.id} уже зарегистрирован.')
     elif check is False:
-        table_users(userId=message.from_user.id,
-                    userFirstname=message.from_user.first_name,
-                    userLastname=message.from_user.last_name,
-                    userName=message.from_user.username,
-                    languageCode=message.from_user.language_code,
-                    isBot=message.from_user.is_bot)
+        Users(userId=message.from_user.id,
+              userFirstname=message.from_user.first_name,
+              userLastname=message.from_user.last_name,
+              userName=message.from_user.username,
+              languageCode=message.from_user.language_code,
+              isBot=message.from_user.is_bot)
         bot.send_message(
             message.chat.id, f'Пользователь: {message.from_user.username} '
             f'с ID: {message.from_user.id} создан.')
@@ -86,15 +84,14 @@ def handler_command_adduser(message: Message):
 @bot.message_handler(commands=['deluser'])
 @bot.edited_message_handler(commands=['deluser'])
 def handler_command_deluser(message: Message):
-    table_users = Users
-    if table_users.tableExists() is False:
+    if Users.tableExists() is False:
         pass
     else:
-        is_user_register = table_users.select(
+        is_user_register = Users.select(
             Users.q.userId == message.from_user.id)
         check = bool(is_user_register.count())
         if check is True:
-            table_users.delete(is_user_register.min('id'))
+            Users.delete(is_user_register[0].id)
             bot.send_message(message.chat.id,
                              f'Пользователь: {message.from_user.username} '
                              f'с ID: {message.from_user.id} удалён.')
@@ -109,14 +106,25 @@ def handler_command_deluser(message: Message):
 @bot.message_handler(commands=['chepetsk'])
 @bot.edited_message_handler(commands=['chepetsk'])
 def handler_command_chepetsk(message: Message):
-    w.check_weather(town='Kirovo-Chepetsk')
-    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
-                                      f"Температура: <b>{w.temp()} C</b>. \n"
-                                      f"Чувствуется как: <b>{w.feels()} C</b>. \n"
-                                      f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
-                                      f"Влажность: <b>{w.humidity()} %</b> \n"
-                                      f"Облачность: <b>{w.clouds()} %</b> \n"
-                                      f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
+    check_weather = w.check_weather(town='Kirovo-Chepetsk')
+    write_current_weather(check_weather)
+    result = CurrentWeather.select(
+        CurrentWeather.q.dateTime == check_weather['dt'])
+    if bool(result.count()) is True:
+        bot.send_message(message.chat.id,
+                         botconfig.WEATHER_MESSAGE.format(
+                             result[0].cityName,
+                             result[0].weatherDescription,
+                             botconfig.EMOJI_DICT[result[0].weatherId],
+                             result[0].mainTemp,
+                             result[0].mainFeelsLike,
+                             result[0].mainPressure,
+                             result[0].mainHumidity,
+                             result[0].cloudsAll,
+                             result[0].windSpeed
+                         ), parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, 'Информация не найдена')
     return
 
 
@@ -156,13 +164,6 @@ def handler_command_text(message: Message):
     else:
         bot.send_message(
             message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
-    return
-
-
-# Return sticker
-@bot.message_handler(content_types=['sticker'])
-def handler_sticker(message: Message):
-    bot.send_sticker(message.chat.id, botconfig.STICKER_ID)
     return
 
 

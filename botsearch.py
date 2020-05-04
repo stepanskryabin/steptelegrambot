@@ -8,7 +8,6 @@ import os
 
 import botconfig
 from botbase import CityList
-from botbase import CurrentWeather
 
 
 class SearchWeather:
@@ -22,53 +21,24 @@ class SearchWeather:
         self.api_call_weather = 'weather?'
         self.api_call_hourly = 'onecall?'
         self.token: str = os.getenv('WEATHER_API')
-        self.response = ''
         self.data = {}
         self.last_word = 0
         self.quantity_word = 0
 
     def check_weather(self, town='Moscow'):
+        """
+        The function forms and sends a request to the site,
+        the result of the function is JSON-object.
+        """
         url = self.url + self.api_call_weather
-        self.response = requests.get(url,
-                                     params={'q': town,
-                                             'appid': self.token,
-                                             'units': 'metric',
-                                             'lang': 'RU'
-                                             })
-        self.data = self.response.json()
-        table_current_weather = CurrentWeather
-        if table_current_weather.tableExists() is False:
-            table_current_weather.createTable()
-        if self.data['cod'] == 200:
-            table_current_weather(
-                cityId=self.data['id'],
-                cityName=self.data['name'],
-                lon=self.data['coord']['lon'],
-                lat=self.data['coord']['lat'],
-                dateTime=self.data['dt'],
-                weatherId=self.data['weather'][0]['id'],
-                weatherMain=self.data['weather'][0]['main'],
-                weatherDescription=self.data['weather'][0]['description'],
-                weatherIcon=self.data['weather'][0]['icon'],
-                base=self.data['base'],
-                mainTemp=self.data['main']['temp'],
-                mainFeelsLike=self.data['main']['feels_like'],
-                mainTempMin=self.data['main']['temp_min'],
-                mainTempMax=self.data['main']['temp_max'],
-                mainPressure=self.data['main']['pressure'],
-                mainHumidity=self.data['main']['humidity'],
-                visibility=self.data['visibility'],
-                windSpeed=self.data['wind']['speed'],
-                cloudsAll=self.data['clouds']['all'],
-                sysType=self.data['sys']['type'],
-                sysId=self.data['sys']['id'],
-                sysCountry=self.data['sys']['country'],
-                sysSunrise=self.data['sys']['sunrise'],
-                sysSunset=self.data['sys']['sunset'],
-                timezone=self.data['timezone']
-            )
-        else:
-            pass
+        response = requests.get(url,
+                                params={'q': town,
+                                        'appid': self.token,
+                                        'units': 'metric',
+                                        'lang': 'RU'
+                                        })
+        data = response.json()
+        return data
 
     def check_hourly_and_daily(self, town='Moscow'):
         table = CityList.select(CityList.q.name == town)
@@ -77,10 +47,11 @@ class SearchWeather:
         lon = column.lon
         lat = column.lat
         url = self.url + self.api_call_hourly
-        self.response = requests.get(url, params={'lon': lon,
-                                                  'lat': lat,
-                                                  'appid': self.token})
-        pass
+        response = requests.get(url, params={'lon': lon,
+                                             'lat': lat,
+                                             'appid': self.token})
+        data = response.json()
+        return data
 
     def result(self):
         search_result = self.data['cod']
@@ -139,66 +110,8 @@ class SearchWeather:
     # Return code of emoji from weather description
     def insert_emoji(self):
         icon_name = self.data['weather'][0]['id']
-        dict = {
-            200: '\U00002744',
-            201: '\U000026A1',
-            202: '\U000026A1',
-            210: '\U000026C5',
-            211: '\U000026C5',
-            212: '\U000026C5',
-            221: '\U000026C5',
-            230: '\U000026A1',
-            231: '\U000026A1',
-            232: '\U000026A1',
-            300: '\U00002614',
-            301: '\U00002614',
-            302: '\U00002614',
-            310: '\U00002614',
-            311: '\U00002614',
-            312: '\U00002614',
-            313: '\U00002614',
-            314: '\U00002614',
-            321: '\U00002614',
-            500: '\U0001F302',
-            501: '\U0001F302',
-            502: '\U0001F302',
-            503: '\U0001F302',
-            504: '\U0001F302',
-            511: '\U00002614',
-            520: '\U00002614',
-            521: '\U00002614',
-            522: '\U00002614',
-            531: '\U00002614',
-            600: '\U00002744',
-            601: '\U00002744',
-            602: '\U00002744',
-            611: '\U00002744',
-            612: '\U00002744',
-            613: '\U00002744',
-            614: '\U00002744',
-            615: '\U00002744',
-            616: '\U00002744',
-            620: '\U00002744',
-            621: '\U00002744',
-            622: '\U00002744',
-            701: '\U0001F301',
-            711: '\U0001F301',
-            712: '\U0001F301',
-            721: '\U0001F301',
-            731: '\U0001F301',
-            741: '\U0001F301',
-            751: '\U0001F301',
-            761: '\U0001F301',
-            762: '\U0001F301',
-            771: '\U0001F301',
-            781: '\U0001F300',
-            800: '\U000026C5',
-            801: '\U00002601',
-            802: '\U00002601',
-            803: '\U000026C5',
-            804: '\U00002601'
-        }
-        return dict[int(icon_name)]
+        emoji = botconfig.EMOJI_DICT
+        return emoji[int(icon_name)]
 
 
 if __name__ == '__main__':
