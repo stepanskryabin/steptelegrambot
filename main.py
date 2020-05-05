@@ -4,7 +4,7 @@
 # NICKNAME = StepTelegramBot
 # Autor: Stepan Skriabin
 # email: stepan.skrjabin@gmail.com
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 import os
 
@@ -160,22 +160,25 @@ def handler_command_kirov(message: Message):
 @bot.edited_message_handler(content_types=['text'])
 def handler_command_text(message: Message):
     city_name = translit(message.text, RussianInternationalPassport1997)
-    w.check_weather(town=city_name)
-    if w.result() == 200:
+    check_weather = w.check_current_weather(town=city_name)
+    write_current_weather(check_weather)
+    dbquery = CurrentWeather.select(
+        CurrentWeather.q.dateTime == check_weather['dt'])
+    if bool(dbquery.count()):
         bot.send_message(message.chat.id,
-                         f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
-                         f"Температура: <b>{w.temp()} C</b>. \n"
-                         f"Чувствуется как: <b>{w.feels()} C</b>. \n"
-                         f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
-                         f"Влажность: <b>{w.humidity()} %</b> \n"
-                         f"Облачность: <b>{w.clouds()} %</b> \n"
-                         f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
-    elif w.result() == '404':
-        bot.send_message(
-            message.chat.id, f"\U0001F6AB Такой город <s> не существует </s>. Возможно вы допустили ошибку?", parse_mode='HTML')
+                         botconfig.WEATHER_MESSAGE.format(
+                             dbquery[0].cityName,
+                             dbquery[0].weatherDescription,
+                             botconfig.EMOJI_DICT[dbquery[0].weatherId],
+                             dbquery[0].mainTemp,
+                             dbquery[0].mainFeelsLike,
+                             dbquery[0].mainPressure,
+                             dbquery[0].mainHumidity,
+                             dbquery[0].cloudsAll,
+                             dbquery[0].windSpeed
+                         ), parse_mode='HTML')
     else:
-        bot.send_message(
-            message.chat.id, f"кТО Здесь? \U0001F628", parse_mode='HTML')
+        bot.send_message(message.chat.id, botconfig.INFO_NOT_FOUND)
     return
 
 
