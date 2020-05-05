@@ -7,7 +7,6 @@ import requests
 import os
 
 import botconfig
-from botbase import CityList
 
 
 class SearchWeather:
@@ -17,20 +16,18 @@ class SearchWeather:
     """
 
     def __init__(self):
-        self.url: str = 'https://api.openweathermap.org/data/2.5/'
+        self.url = 'https://api.openweathermap.org/data/2.5/'
         self.api_call_weather = 'weather?'
         self.api_call_onecall = 'onecall?'
         self.api_call_forecast = 'forecast?'
-        self.token: str = os.getenv('WEATHER_API')
-        self.data = {}
-        self.last_word = 0
-        self.quantity_word = 0
+        self.token = os.getenv('WEATHER_API')
 
     def check_current_weather(self, town='Moscow'):
         """
             The function forms and sends a request to the site,
             the result of the function is JSON-object сontains
-            informationInformation about the current weather in the selected city.
+            informationInformation about the current weather in the selected
+            city.
         """
         url = self.url + self.api_call_weather
         response = requests.get(url,

@@ -19,6 +19,7 @@ import botconfig
 from botsearch import SearchWeather
 from botbase import Users
 from botbase import write_current_weather
+from botbase import write_users
 from botbase import CurrentWeather
 
 
@@ -59,72 +60,72 @@ def handler_command_version(message: Message):
 @bot.message_handler(commands=['reguser'])
 @bot.edited_message_handler(commands=['reguser'])
 def handler_command_adduser(message: Message):
-    Users.createTable(ifNotExist=True)
-    is_user_register = Users.select(
-        Users.q.userId == message.from_user.id)
-    check = bool(is_user_register.count())
-    if check is True:
-        bot.send_message(
-            message.chat.id, f'Пользователь: {message.from_user.username} '
-            f'с ID {message.from_user.id} уже зарегистрирован.')
-    elif check is False:
-        Users(userId=message.from_user.id,
-              userFirstname=message.from_user.first_name,
-              userLastname=message.from_user.last_name,
-              userName=message.from_user.username,
-              languageCode=message.from_user.language_code,
-              isBot=message.from_user.is_bot)
-        bot.send_message(
-            message.chat.id, f'Пользователь: {message.from_user.username} '
-            f'с ID: {message.from_user.id} создан.')
+    data = [message.from_user.id,
+            message.from_user.first_name,
+            message.from_user.last_name,
+            message.from_user.username,
+            message.from_user.language_code,
+            message.from_user.is_bot]
+    dbquery = Users.select(
+        Users.q.userId == data[0])
+    if bool(dbquery.count()):
+        bot.send_message(message.chat.id,
+                         botconfig.USER_ALREDY_REGISTERED.format(
+                             dbquery[0].userName,
+                             dbquery[0].userId))
     else:
-        bot.send_message(message.chat.id, 'Что-то пошло не так')
+        write_users(data)
+        bot.send_message(message.chat.id,
+                         botconfig.USER_IS_REGISTERED.format(
+                             dbquery[0].userName,
+                             dbquery[0].userId))
+    return
 
 
 @bot.message_handler(commands=['deluser'])
 @bot.edited_message_handler(commands=['deluser'])
 def handler_command_deluser(message: Message):
-    if Users.tableExists() is False:
+    if Users.tableExists():
         pass
     else:
-        is_user_register = Users.select(
+        dbquery = Users.select(
             Users.q.userId == message.from_user.id)
-        check = bool(is_user_register.count())
-        if check is True:
-            Users.delete(is_user_register[0].id)
+        if bool(dbquery.count()):
+            Users.delete(dbquery[0].id)
             bot.send_message(message.chat.id,
-                             f'Пользователь: {message.from_user.username} '
-                             f'с ID: {message.from_user.id} удалён.')
-        elif check is False:
-            bot.send_message(message.chat.id,
-                             f'Пользователя: {message.from_user.username} '
-                             f'с ID: {message.from_user.id} не существует.')
+                             botconfig.USER_IS_DELETED.format(
+                                 dbquery[0].userName,
+                                 dbquery[0].userId))
         else:
-            bot.send_message(message.chat.id, 'Что-то пошло не так')
+            bot.send_message(message.chat.id,
+                             botconfig.USER_NOT_EXIST.format(
+                                 dbquery[0].userName,
+                                 dbquery[0].userId))
+    return
 
 
 @bot.message_handler(commands=['chepetsk'])
 @bot.edited_message_handler(commands=['chepetsk'])
 def handler_command_chepetsk(message: Message):
-    check_weather = w.check_weather(town='Kirovo-Chepetsk')
+    check_weather = w.check_current_weather(town='Kirovo-Chepetsk')
     write_current_weather(check_weather)
-    result = CurrentWeather.select(
+    dbquery = CurrentWeather.select(
         CurrentWeather.q.dateTime == check_weather['dt'])
-    if bool(result.count()) is True:
+    if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.WEATHER_MESSAGE.format(
-                             result[0].cityName,
-                             result[0].weatherDescription,
-                             botconfig.EMOJI_DICT[result[0].weatherId],
-                             result[0].mainTemp,
-                             result[0].mainFeelsLike,
-                             result[0].mainPressure,
-                             result[0].mainHumidity,
-                             result[0].cloudsAll,
-                             result[0].windSpeed
+                             dbquery[0].cityName,
+                             dbquery[0].weatherDescription,
+                             botconfig.EMOJI_DICT[dbquery[0].weatherId],
+                             dbquery[0].mainTemp,
+                             dbquery[0].mainFeelsLike,
+                             dbquery[0].mainPressure,
+                             dbquery[0].mainHumidity,
+                             dbquery[0].cloudsAll,
+                             dbquery[0].windSpeed
                          ), parse_mode='HTML')
     else:
-        bot.send_message(message.chat.id, 'Информация не найдена')
+        bot.send_message(message.chat.id, botconfig.INFO_NOT_FOUND)
     return
 
 
@@ -132,14 +133,25 @@ def handler_command_chepetsk(message: Message):
 @bot.message_handler(commands=['kirov'])
 @bot.edited_message_handler(commands=['kirov'])
 def handler_command_kirov(message: Message):
-    w.check_weather(town='Kirov')
-    bot.send_message(message.chat.id, f"Сейчас в {w.city_name()} <b><i>{w.description()}</i></b> {w.insert_emoji()} \n"
-                                      f"Температура: <b>{w.temp()} C</b>. \n"
-                                      f"Чувствуется как: <b>{w.feels()} C</b>. \n"
-                                      f"Давление: <b>{w.pressure()} мм.рт.ст.</b> \n"
-                                      f"Влажность: <b>{w.humidity()} %</b> \n"
-                                      f"Облачность: <b>{w.clouds()} %</b> \n"
-                                      f"Скорость ветра: <b>{w.speed_wing()} метров в сек.</b>", parse_mode='HTML')
+    check_weather = w.check_forecast(town='Kirov')
+    write_current_weather(check_weather)
+    dbquery = CurrentWeather.select(
+        CurrentWeather.q.dateTime == check_weather['dt'])
+    if bool(dbquery.count()):
+        bot.send_message(message.chat.id,
+                         botconfig.WEATHER_MESSAGE.format(
+                             dbquery[0].cityName,
+                             dbquery[0].weatherDescription,
+                             botconfig.EMOJI_DICT[dbquery[0].weatherId],
+                             dbquery[0].mainTemp,
+                             dbquery[0].mainFeelsLike,
+                             dbquery[0].mainPressure,
+                             dbquery[0].mainHumidity,
+                             dbquery[0].cloudsAll,
+                             dbquery[0].windSpeed
+                         ), parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, botconfig.INFO_NOT_FOUND)
     return
 
 

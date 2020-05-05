@@ -119,6 +119,17 @@ def city_database_fill():
     pass
 
 
+def write_users(*args):
+    data = args
+    Users.createTable(ifNotExists=True)
+    Users(userId=data[0],
+          userFirstname=data[1],
+          userLastname=data[2],
+          userName=data[3],
+          languageCode=data[4],
+          isBot=data[5])
+
+
 def write_current_weather(**kwargs):
     data = kwargs
     CurrentWeather.createTable(ifNotExist=True)
@@ -150,6 +161,44 @@ def write_current_weather(**kwargs):
             sysSunset=data['sys']['sunset'],
             timezone=data['timezone']
         )
+        print('write_current_weather = OK')
+    elif data == '400':
+        print('No such city has been found')
+
+
+def write_forecast(**kwargs):
+    data = kwargs
+    ForecastWeather.createTable(ifNotExist=True)
+    if data['cod'] == 200:
+        for i in range(40):
+            ForecastWeather(cityId=data['city']['id'],
+                            cityName=data['city']['name'],
+                            lon=['coord']['lon'],
+                            lat=['coord']['lat'],
+                            country=['city']['country'],
+                            timezone=['city']['timezone'],
+                            sunrise=['city']['sunrise'],
+                            sunset=['city']['sunset'],
+                            dateTime=['list'][i]['dt'],
+                            dateTimeText=['list'][i]['dt_txt'],
+                            mainTemp=['list'][i]['main']['temp'],
+                            mainFeelsLike=['list'][i]['main']['feels_like'],
+                            mainTempMin=['list'][i]['main']['temp_min'],
+                            mainTempMax=['list'][i]['main']['temp_max'],
+                            mainPressure=['list'][i]['main']['pressure'],
+                            mainSeaLevel=['list'][i]['main']['sea_level'],
+                            mainGroundLevel=['list'][i]['main']['grnd_level'],
+                            mainHumidity=['list'][i]['main']['humidity'],
+                            mainTempkf=['list'][i]['main']['temp_k'],
+                            weatherId=['list'][i]['weather']['id'],
+                            weatherMain=['list'][i]['weather']['main'],
+                            weatherDescription=[
+                                'list'][i]['weather']['description'],
+                            weatherIcon=['list'][i]['weather']['icon'],
+                            cloudsAll=['list'][i]['clouds']['all'],
+                            windSpeed=['list'][i]['wind']['speed'],
+                            windDeg=['list'][i]['wind']['deg'],
+                            sysPod=['list'][i]['sys']['pod'])
         print('write_current_weather = OK')
     elif data == '400':
         print('No such city has been found')

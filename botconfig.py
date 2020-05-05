@@ -163,6 +163,15 @@ EMOJI_DICT = {
     804: '\U00002601'
 }
 
+USER_ALREDY_REGISTERED = "Пользователь: {1} с ID {2} уже зарегистрирован."
+
+USER_IS_REGISTERED = "Пользователь: {1} с ID: {2} создан."
+
+USER_IS_DELETED = "Пользователь: {1} с ID: {2} удалён."
+
+USER_NOT_EXIST = "Пользователя: {1} с ID: {} не существует."
+
+INFO_NOT_FOUND = "Информация не найдена"
 
 if __name__ == '__main__':
     print('This module does not need to be run as a separate process.')
