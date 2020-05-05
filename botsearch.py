@@ -12,23 +12,25 @@ from botbase import CityList
 
 class SearchWeather:
     """
-    Send requests from openweathermap.org and
-    get JSON-file with information
+        Send requests from openweathermap.org and
+        get JSON-file with information
     """
 
     def __init__(self):
         self.url: str = 'https://api.openweathermap.org/data/2.5/'
         self.api_call_weather = 'weather?'
-        self.api_call_hourly = 'onecall?'
+        self.api_call_onecall = 'onecall?'
+        self.api_call_forecast = 'forecast?'
         self.token: str = os.getenv('WEATHER_API')
         self.data = {}
         self.last_word = 0
         self.quantity_word = 0
 
-    def check_weather(self, town='Moscow'):
+    def check_current_weather(self, town='Moscow'):
         """
-        The function forms and sends a request to the site,
-        the result of the function is JSON-object.
+            The function forms and sends a request to the site,
+            the result of the function is JSON-object сontains
+            informationInformation about the current weather in the selected city.
         """
         url = self.url + self.api_call_weather
         response = requests.get(url,
@@ -40,16 +42,33 @@ class SearchWeather:
         data = response.json()
         return data
 
-    def check_hourly_and_daily(self, town='Moscow'):
-        table = CityList.select(CityList.q.name == town)
-        row_id = int(table.min())
-        column = CityList.get(row_id)
-        lon = column.lon
-        lat = column.lat
-        url = self.url + self.api_call_hourly
-        response = requests.get(url, params={'lon': lon,
-                                             'lat': lat,
-                                             'appid': self.token})
+    def check_forecast(self, town='Moscow'):
+        """
+            The function forms and sends a request to the site,
+            the result of the function is JSON-object сontaining
+            weather information for the last 5 days, in 3 hour increments.
+        """
+        url = self.url + self.api_call_forecast
+        response = requests.get(url, params={'q': town,
+                                             'appid': self.token,
+                                             'units': 'metric',
+                                             'lang': 'RU'
+                                             })
+        data = response.json()
+        return data
+
+    def check_onecall(self, lat, lon, part, town='Moscow'):
+        """
+
+        """
+        url = self.url + self.api_call_onecall
+        response = requests.get(url, params={'lat': lat,
+                                             'lon': lon,
+                                             'exclude': part,
+                                             'appid': self.token,
+                                             'units': 'metric',
+                                             'lang': 'RU'
+                                             })
         data = response.json()
         return data
 
