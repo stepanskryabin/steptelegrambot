@@ -44,12 +44,15 @@ FILENAME = './log/bot.log'
 FILEMODE = 'w'
 
 # Debug message output format
-# %(asctime)s -    Human-readable time when the LogRecord was created.
-#                  By default this is of the form ‘2003-07-08 16:49:45,896’
-#                  (the numbers after the comma are millisecond portion of the time).
-# %(levelname)s -  Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL').
-# %(funcName)s -   Name of function containing the logging call.
-# %(message)s -    The logged message, computed as msg % args. This is set when Formatter.format() is invoked.
+# %(asctime)s   -   Human-readable time when the LogRecord was created.
+#                   By default this is of the form ‘2003-07-08 16:49:45,896’
+#                   (the numbers after the comma are millisecond portion of the
+#                   time).
+# %(levelname)s -   Text logging level for the message ('DEBUG', 'INFO',
+#                   'WARNING', 'ERROR', 'CRITICAL').
+# %(funcName)s  -   Name of function containing the logging call.
+# %(message)s   -   The logged message, computed as msg % args. This is set
+#                   when Formatter.format() is invoked.
 # Possible options:
 FORMAT_MESSAGE = '%(asctime)s: %(levelname)s: %(funcName)s - %(message)s'
 
