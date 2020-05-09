@@ -36,39 +36,6 @@ class SearchWeather:
                                              'lang': 'RU'
                                              })
         self.data = self.response.json()
-        table_current_weather = CurrentWeather
-        if table_current_weather.tableExists() is False:
-            table_current_weather.createTable()
-        if self.data['cod'] == 200:
-            table_current_weather(
-                cityId=self.data['id'],
-                cityName=self.data['name'],
-                lon=self.data['coord']['lon'],
-                lat=self.data['coord']['lat'],
-                dateTime=self.data['dt'],
-                weatherId=self.data['weather'][0]['id'],
-                weatherMain=self.data['weather'][0]['main'],
-                weatherDescription=self.data['weather'][0]['description'],
-                weatherIcon=self.data['weather'][0]['icon'],
-                base=self.data['base'],
-                mainTemp=self.data['main']['temp'],
-                mainFeelsLike=self.data['main']['feels_like'],
-                mainTempMin=self.data['main']['temp_min'],
-                mainTempMax=self.data['main']['temp_max'],
-                mainPressure=self.data['main']['pressure'],
-                mainHumidity=self.data['main']['humidity'],
-                visibility=self.data['visibility'],
-                windSpeed=self.data['wind']['speed'],
-                cloudsAll=self.data['clouds']['all'],
-                sysType=self.data['sys']['type'],
-                sysId=self.data['sys']['id'],
-                sysCountry=self.data['sys']['country'],
-                sysSunrise=self.data['sys']['sunrise'],
-                sysSunset=self.data['sys']['sunset'],
-                timezone=self.data['timezone']
-            )
-        else:
-            pass
 
     def check_hourly_and_daily(self, town='Moscow'):
         table = CityList.select(CityList.q.name == town)
@@ -80,7 +47,7 @@ class SearchWeather:
         self.response = requests.get(url, params={'lon': lon,
                                                   'lat': lat,
                                                   'appid': self.token})
-        pass
+        self.data = self.response
 
     def result(self):
         search_result = self.data['cod']
