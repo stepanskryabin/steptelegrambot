@@ -26,6 +26,19 @@ def main(migrate):
         models.ForecastWeather.dropTable()
         models.OnecallWeather.dropTable()
         models.CityList.dropTable()
+    else:
+        return
+
+
+@click.command()
+@click.option('--city', help='download city list')
+def fill_table(city):
+    if city == 'update':
+        pass
+    elif city == 'delete':
+        pass
+    else:
+        return
 
 
 if __name__ == "__main__":

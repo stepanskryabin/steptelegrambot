@@ -8,19 +8,23 @@ import sqlobject as orm
 
 class Users(orm.SQLObject):
     """
-        Create a table where we store user registration data.
+        Table where we store user registration data.
     """
     userId = orm.IntCol(unique=True)
-    userFirstname = orm.StringCol()
-    userLastname = orm.StringCol()
+    userFirstName = orm.StringCol()
+    userLastName = orm.StringCol()
     userName = orm.StringCol()
     languageCode = orm.StringCol()
     isBot = orm.BoolCol()
+    #
+    userTown = orm.String()
+    userTownLon = orm.FloatCol()
+    userTownLat = orm.FloatCol()
 
 
 class CurrentWeather(orm.SQLObject):
     """
-        Create a table where we store weather results at the time of
+        Table where we store weather results at the time of
         user request
     """
     # Default name from DB column
@@ -88,10 +92,75 @@ class ForecastWeather(orm.SQLObject):
 
 
 class OnecallWeather(orm.SQLObject):
-    pass
+    """
+    """
+    # Default name from DB column
+    lon = orm.FloatCol()
+    lat = orm.FloatCol()
+    timezone = orm.StringCol()
+    # Current
+    currentSunrise = orm.IntCol()
+    currentSunset = orm.IntCol()
+    currentDateTime = orm.IntCol()
+    currentTemp = orm.FloatCol()
+    currentFeelsLike = orm.FloatCol()
+    currentPressure = orm.IntCol()
+    currentHumidity = orm.IntCol()
+    currentDewPoint = orm.FloatCol()
+    currentUvi = orm.FloatCol()
+    currentClouds = orm.IntCol()
+    currentVisibility = orm.IntCol()
+    currentWindSpeed = orm.IntCol()
+    currentWindDeg = orm.IntCol()
+    currentWeatherId = orm.IntCol()
+    currentWeatherMain = orm.StringCol()
+    currentWeatherDescription = orm.StringCol()
+    currentWeatherIcon = orm.StringCol()
+    # Hourly
+    hourlyDateTime = orm.IntCol()
+    hourlyTemp = orm.FloatCol()
+    hourlyFeelsLike = orm.FloatCol()
+    hourlyPressure = orm.IntCol()
+    hourlyHumidity = orm.IntCol()
+    hourlyDewPoint = orm.FloatCol()
+    hourlyClouds = orm.IntCol()
+    hourlyWindSpeed = orm.IntCol()
+    hourlyWindDeg = orm.IntCol()
+    hourlyWeatherId = orm.IntCol()
+    hourlyWeatherMain = orm.StringCol()
+    hourlyWeatherDescription = orm.StringCol()
+    hourlyWeatherIcon = orm.StringCol()
+    # Daily
+    dailyDateTime = orm.IntCol()
+    dailySunrise = orm.IntCol()
+    dailySunset = orm.IntCol()
+    dailyTempDay = orm.FloatCol()
+    dailyTempMin = orm.FloatCol()
+    dailyTempMax = orm.FloatCol()
+    dailyTempNight = orm.FloatCol()
+    dailyTempEve = orm.FloatCol()
+    dailyTempMorn = orm.FloatCol()
+    dailyFeelsLikeDay = orm.FloatCol()
+    dailyFeelsLikeNight = orm.FloatCol()
+    dailyFeelsLikeEve = orm.FloatCol()
+    dailyFeelsLikeMorn = orm.FloatCol()
+    dailyPressure = orm.IntCol()
+    dailyHumidity = orm.IntCol()
+    dailyDewPoint = orm.FloatCol()
+    dailyWindSpeed = orm.IntCol()
+    dailyWindDeg = orm.IntCol()
+    dailyWeatherId = orm.IntCol()
+    dailyWeatherMain = orm.StringCol()
+    dailyWeatherDescription = orm.StringCol()
+    dailyWeatherIcon = orm.StringCol()
+    dailyClouds = orm.IntCol()
+    dailyUvi = orm.FloatCol()
 
 
 class CityList(orm.SQLObject):
+    """
+        Table contents City list in Bulk JSON-file
+    """
     cityId = orm.IntCol()
     cityName = orm.StringCol()
     state = orm.StringCol(default=None)

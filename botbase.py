@@ -25,11 +25,6 @@ connection = orm.connectionForURI(botconfig.ONLINE_POSTGRESQL)
 orm.sqlhub.processConnection = connection
 
 
-def city_database_fill():
-    # with open('./lib/city.list.json', r)
-    pass
-
-
 def write_users(*args):
     data = args
     Users.createTable(ifNotExists=True)
@@ -38,12 +33,14 @@ def write_users(*args):
           userLastname=data[2],
           userName=data[3],
           languageCode=data[4],
-          isBot=data[5])
+          isBot=data[5],
+          userTown=data[6],
+          userTownLon=data[7],
+          userTownLat=data[8])
 
 
 def write_current_weather(**kwargs):
     data = kwargs
-    CurrentWeather.createTable(ifNotExist=True)
     if data['cod'] == 200:
         CurrentWeather(
             cityId=data['id'],
@@ -113,6 +110,10 @@ def write_forecast(**kwargs):
         print('write_current_weather = OK')
     elif data == '400':
         print('No such city has been found')
+
+
+def write_onecall():
+    pass
 
 
 if __name__ == '__main__':
