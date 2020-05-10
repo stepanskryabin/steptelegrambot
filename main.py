@@ -17,10 +17,13 @@ from translitua import RussianInternationalPassport1997
 
 import botconfig
 from botsearch import SearchWeather
-from botbase import Users
+from models import Users
+from models import CurrentWeather
+from models import ForecastWeather
+from models import OnecallWeather
 from botbase import write_current_weather
 from botbase import write_users
-from botbase import CurrentWeather
+from botbase import write_onecall
 
 
 bot = TeleBot(os.getenv('BOT_API'))
@@ -74,6 +77,7 @@ def handler_command_adduser(message: Message):
                              dbquery[0].userName,
                              dbquery[0].userId))
     else:
+        bot.send_message(message.chat.id, botconfig.REGISTER_PROCEED)
         write_users(data)
         bot.send_message(message.chat.id,
                          botconfig.USER_IS_REGISTERED.format(
@@ -85,22 +89,17 @@ def handler_command_adduser(message: Message):
 @bot.message_handler(commands=['deluser'])
 @bot.edited_message_handler(commands=['deluser'])
 def handler_command_deluser(message: Message):
-    if Users.tableExists():
-        pass
+    dbquery = Users.select(
+        Users.q.userId == message.from_user.id)
+    if bool(dbquery.count()):
+        Users.delete(dbquery[0].id)
+        bot.send_message(message.chat.id, botconfig.USER_IS_DELETED.format(
+            dbquery[0].userName,
+            dbquery[0].userId))
     else:
-        dbquery = Users.select(
-            Users.q.userId == message.from_user.id)
-        if bool(dbquery.count()):
-            Users.delete(dbquery[0].id)
-            bot.send_message(message.chat.id,
-                             botconfig.USER_IS_DELETED.format(
-                                 dbquery[0].userName,
-                                 dbquery[0].userId))
-        else:
-            bot.send_message(message.chat.id,
-                             botconfig.USER_NOT_EXIST.format(
-                                 dbquery[0].userName,
-                                 dbquery[0].userId))
+        bot.send_message(message.chat.id, botconfig.USER_NOT_EXIST.format(
+            dbquery[0].userName,
+            dbquery[0].userId))
     return
 
 
@@ -140,6 +139,105 @@ def handler_command_kirov(message: Message):
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.WEATHER_MESSAGE.format(
+                             dbquery[0].cityName,
+                             dbquery[0].weatherDescription,
+                             botconfig.EMOJI_DICT[dbquery[0].weatherId],
+                             dbquery[0].mainTemp,
+                             dbquery[0].mainFeelsLike,
+                             dbquery[0].mainPressure,
+                             dbquery[0].mainHumidity,
+                             dbquery[0].cloudsAll,
+                             dbquery[0].windSpeed
+                         ), parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, botconfig.INFO_NOT_FOUND)
+    return
+
+# Return current weather in fixed city for registred User
+@bot.message_handler(commands=['current'])
+@bot.edited_message_handler(commands=['current'])
+def handler_command_current(message: Message):
+    dbquery = Users.select(Users.q.userTown == message.from_user.id)
+    if bool(dbquery.count()):
+        town = dbquery[0].userTown
+        check_weather = w.check_current_weather(town)
+        write_current_weather(check_weather)
+    else:
+        bot.send_message(
+            message.chat.id, botconfig.FUNCTION_FOR_REGISTERED_USER)
+        return
+    dbquery = CurrentWeather.selectBy(
+        dateTime=check_weather['dt'], cityName=town)
+    if bool(dbquery.count()):
+        bot.send_message(message.chat.id,
+                         botconfig.WEATHER_MESSAGE.format(
+                             dbquery[0].cityName,
+                             dbquery[0].weatherDescription,
+                             botconfig.EMOJI_DICT[dbquery[0].weatherId],
+                             dbquery[0].mainTemp,
+                             dbquery[0].mainFeelsLike,
+                             dbquery[0].mainPressure,
+                             dbquery[0].mainHumidity,
+                             dbquery[0].cloudsAll,
+                             dbquery[0].windSpeed
+                         ), parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, botconfig.INFO_NOT_FOUND)
+    return
+
+
+# Return forecast weather in fixed city for registred User
+@bot.message_handler(commands=['forecast'])
+@bot.edited_message_handler(commands=['forecast'])
+def handler_command_cforecast(message: Message):
+    dbquery = Users.select(Users.q.userId == message.from_user.id)
+    if bool(dbquery.count()):
+        town = dbquery[0].userTown
+        check_weather = w.check_forecast(town)
+        write_current_weather(check_weather)
+    else:
+        bot.send_message(
+            message.chat.id, botconfig.FUNCTION_FOR_REGISTERED_USER)
+        return
+    dbquery = ForecastWeather.selectBy(
+        dateTime=check_weather['dt'], cityName=town)
+    if bool(dbquery.count()):
+        bot.send_message(message.chat.id,
+                         botconfig.FORECAST_WEATHER_MESSAGE.format(
+                             dbquery[0].cityName,
+                             dbquery[0].weatherDescription,
+                             botconfig.EMOJI_DICT[dbquery[0].weatherId],
+                             dbquery[0].mainTemp,
+                             dbquery[0].mainFeelsLike,
+                             dbquery[0].mainPressure,
+                             dbquery[0].mainHumidity,
+                             dbquery[0].cloudsAll,
+                             dbquery[0].windSpeed
+                         ), parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, botconfig.INFO_NOT_FOUND)
+    return
+
+
+# Return onecall weather in fixed city for registred User
+@bot.message_handler(commands=['onecall'])
+@bot.edited_message_handler(commands=['onecall'])
+def handler_command_onecall(message: Message):
+    dbquery = Users.select(Users.q.userId == message.from_user.id)
+    if bool(dbquery.count()):
+        lon = dbquery[0].userTownLon
+        lat = dbquery[0].userTownLat
+        check_weather = w.check_onecall(lon, lat)
+        write_onecall(check_weather)
+    else:
+        bot.send_message(
+            message.chat.id, botconfig.FUNCTION_FOR_REGISTERED_USER)
+        return
+    dbquery = OnecallWeather.selectBy(
+        dateTime=check_weather['dt'], lon=lon, lat=lat)
+    if bool(dbquery.count()):
+        bot.send_message(message.chat.id,
+                         botconfig.ONECALL_WEATHER_MESSAGE.format(
                              dbquery[0].cityName,
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
