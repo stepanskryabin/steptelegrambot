@@ -54,14 +54,13 @@ class SearchWeather:
         data = response.json()
         return data
 
-    def check_onecall(self, lat, lon, part, town='Moscow'):
+    def check_onecall(self, lat, lon):
         """
 
         """
         url = self.url + self.api_call_onecall
         response = requests.get(url, params={'lat': lat,
                                              'lon': lon,
-                                             'exclude': part,
                                              'appid': self.token,
                                              'units': 'metric',
                                              'lang': 'RU'
