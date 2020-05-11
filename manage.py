@@ -16,12 +16,14 @@ orm.sqlhub.processConnection = connection
 def main(migrate):
     if migrate == "create_table":
         models.Users.createTable(ifNotExists=True)
+        models.UsersSettings.createTable(ifNotExists=True)
         models.CurrentWeather.createTable(ifNotExists=True)
         models.ForecastWeather.createTable(ifNotExists=True)
         models.OnecallWeather.createTable(ifNotExists=True)
         models.CityList.createTable(ifNotExists=True)
     elif migrate == "delete_table":
         models.Users.dropTable()
+        models.UsersSettings.dropTable()
         models.CurrentWeather.dropTable()
         models.ForecastWeather.dropTable()
         models.OnecallWeather.dropTable()

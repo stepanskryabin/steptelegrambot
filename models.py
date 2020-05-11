@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Autor: Stepan Skriabin - stepan.skrjabin@gmail.com
-# Base
+# Models from database
 
 import sqlobject as orm
 
@@ -17,9 +17,22 @@ class Users(orm.SQLObject):
     languageCode = orm.StringCol()
     isBot = orm.BoolCol()
     #
-    userTown = orm.String()
-    userTownLon = orm.FloatCol()
-    userTownLat = orm.FloatCol()
+    settings = orm.ForeignKey('UserSettings')
+
+
+class UsersSettings(orm.SQLObject):
+    """
+        Table contents personal settings from users
+    """
+    userId = orm.IntCol()
+    userTown = orm.StringCol()
+    userPassword = orm.StringCol()
+    townLon = orm.FloatCol()
+    townLat = orm.FloatCol()
+    remindTime = orm.IntCol()
+    remindDay = orm.IntCol()
+    remindQuantity = orm.IntCol()
+    Users = orm.MultipleJoin('Users')
 
 
 class CurrentWeather(orm.SQLObject):

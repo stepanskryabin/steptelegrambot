@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # NAME = ПогодныйБот
-# NICKNAME = StepTelegramBot
+# BOT NICKNAME = StepTelegramBot
 # Autor: Stepan Skriabin
 # email: stepan.skrjabin@gmail.com
-__version__ = '0.0.8'
-
-import os
+__version__ = '0.0.9b1'
 
 from telebot import TeleBot
 from telebot.types import Message
@@ -16,20 +14,19 @@ from translitua import translit
 from translitua import RussianInternationalPassport1997
 
 import botconfig
-from botsearch import SearchWeather
+from botsearch import search_weather
+from botsearch import replace_name
 from models import Users
 from models import CurrentWeather
 from models import ForecastWeather
 from models import OnecallWeather
-from botbase import write_current_weather
+from botbase import write_current
 from botbase import write_users
 from botbase import write_onecall
+from botbase import write_forecast
 
 
-bot = TeleBot(os.getenv('BOT_API'))
-
-# Create a new SearchWeather object
-w = SearchWeather()
+bot = TeleBot(botconfig.TELEGRAM_TOKEN_API)
 
 # Return information about StepTelegramBot
 @bot.message_handler(commands=['start'])
@@ -77,7 +74,6 @@ def handler_command_adduser(message: Message):
                              dbquery[0].userName,
                              dbquery[0].userId))
     else:
-        bot.send_message(message.chat.id, botconfig.REGISTER_PROCEED)
         write_users(data)
         bot.send_message(message.chat.id,
                          botconfig.USER_IS_REGISTERED.format(
@@ -106,14 +102,14 @@ def handler_command_deluser(message: Message):
 @bot.message_handler(commands=['chepetsk'])
 @bot.edited_message_handler(commands=['chepetsk'])
 def handler_command_chepetsk(message: Message):
-    check_weather = w.check_current_weather(town='Kirovo-Chepetsk')
-    write_current_weather(check_weather)
-    dbquery = CurrentWeather.select(
-        CurrentWeather.q.dateTime == check_weather['dt'])
-    if bool(dbquery.count()):
+    result = search_weather(town='Kirovo-Chepetsk', option='current')
+    if result['cod'] == 200:
+        write_current(result)
+        dbquery = CurrentWeather.select(
+            CurrentWeather.q.dateTime == result['dt'])
         bot.send_message(message.chat.id,
                          botconfig.WEATHER_MESSAGE.format(
-                             dbquery[0].cityName,
+                             replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
                              dbquery[0].mainTemp,
@@ -128,18 +124,17 @@ def handler_command_chepetsk(message: Message):
     return
 
 
-# Return weather in fixed city Kirov
 @bot.message_handler(commands=['kirov'])
 @bot.edited_message_handler(commands=['kirov'])
 def handler_command_kirov(message: Message):
-    check_weather = w.check_forecast(town='Kirov')
-    write_current_weather(check_weather)
-    dbquery = CurrentWeather.select(
-        CurrentWeather.q.dateTime == check_weather['dt'])
-    if bool(dbquery.count()):
+    result = search_weather(town='Kirov', option='current')
+    if result['cod'] == 200:
+        write_current(result)
+        dbquery = CurrentWeather.select(
+            CurrentWeather.q.dateTime == result['dt'])
         bot.send_message(message.chat.id,
                          botconfig.WEATHER_MESSAGE.format(
-                             dbquery[0].cityName,
+                             replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
                              dbquery[0].mainTemp,
@@ -160,14 +155,14 @@ def handler_command_current(message: Message):
     dbquery = Users.select(Users.q.userTown == message.from_user.id)
     if bool(dbquery.count()):
         town = dbquery[0].userTown
-        check_weather = w.check_current_weather(town)
-        write_current_weather(check_weather)
+        result = search_weather(town, option='current')
+        write_current(result)
     else:
         bot.send_message(
             message.chat.id, botconfig.FUNCTION_FOR_REGISTERED_USER)
         return
     dbquery = CurrentWeather.selectBy(
-        dateTime=check_weather['dt'], cityName=town)
+        dateTime=result['dt'], cityName=town)
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.WEATHER_MESSAGE.format(
@@ -189,18 +184,18 @@ def handler_command_current(message: Message):
 # Return forecast weather in fixed city for registred User
 @bot.message_handler(commands=['forecast'])
 @bot.edited_message_handler(commands=['forecast'])
-def handler_command_cforecast(message: Message):
+def handler_command_forecast(message: Message):
     dbquery = Users.select(Users.q.userId == message.from_user.id)
     if bool(dbquery.count()):
         town = dbquery[0].userTown
-        check_weather = w.check_forecast(town)
-        write_current_weather(check_weather)
+        result = search_weather(town, option='forecast')
+        write_forecast(result)
     else:
         bot.send_message(
             message.chat.id, botconfig.FUNCTION_FOR_REGISTERED_USER)
         return
     dbquery = ForecastWeather.selectBy(
-        dateTime=check_weather['dt'], cityName=town)
+        dateTime=result['dt'], cityName=town)
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.FORECAST_WEATHER_MESSAGE.format(
@@ -227,14 +222,15 @@ def handler_command_onecall(message: Message):
     if bool(dbquery.count()):
         lon = dbquery[0].userTownLon
         lat = dbquery[0].userTownLat
-        check_weather = w.check_onecall(lon, lat)
-        write_onecall(check_weather)
+        town = dbquery[0].userTown
+        result = search_weather(town, option='onecall', lon=lon, lat=lat)
+        write_onecall(result)
     else:
         bot.send_message(
             message.chat.id, botconfig.FUNCTION_FOR_REGISTERED_USER)
         return
     dbquery = OnecallWeather.selectBy(
-        dateTime=check_weather['dt'], lon=lon, lat=lat)
+        dateTime=result['dt'], lon=lon, lat=lat)
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.ONECALL_WEATHER_MESSAGE.format(
@@ -257,15 +253,15 @@ def handler_command_onecall(message: Message):
 @bot.message_handler(content_types=['text'])
 @bot.edited_message_handler(content_types=['text'])
 def handler_command_text(message: Message):
-    city_name = translit(message.text, RussianInternationalPassport1997)
-    check_weather = w.check_current_weather(town=city_name)
-    write_current_weather(check_weather)
-    dbquery = CurrentWeather.select(
-        CurrentWeather.q.dateTime == check_weather['dt'])
-    if bool(dbquery.count()):
+    town = translit(message.text, RussianInternationalPassport1997)
+    result = search_weather(town, option='current')
+    if result['cod'] == 200:
+        write_current(result)
+        dbquery = CurrentWeather.select(
+            CurrentWeather.q.dateTime == result['dt'])
         bot.send_message(message.chat.id,
                          botconfig.WEATHER_MESSAGE.format(
-                             dbquery[0].cityName,
+                             replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
                              dbquery[0].mainTemp,

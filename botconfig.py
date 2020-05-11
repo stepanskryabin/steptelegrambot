@@ -15,6 +15,12 @@ LOCAL_POSTGRESQL = 'postgres://testdb:123456@127.0.0.1/test_telegrambot'
 # PostgreSQL
 ONLINE_POSTGRESQL = os.getenv('DATABASE_URL')
 
+# Configuring OpenWeatherMap.org access
+WEATHER_TOKEN_API = os.getenv('WEATHER_API')
+
+# Configuring Telegram access
+TELEGRAM_TOKEN_API = os.getenv('BOT_API')
+
 
 # Logging module settings
 #
