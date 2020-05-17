@@ -6,28 +6,34 @@ import click
 
 import models
 
-connection = orm.connectionForURI(botconfig.LOCAL_SQLITE)
+connection = orm.connectionForURI(botconfig.ONLINE_POSTGRESQL)
 orm.sqlhub.processConnection = connection
 
 
 @click.command()
-@click.option('--migrate', default='create_table', help='Create or delete all table \
+@click.option('--table', default='create', help='Create or delete all table \
     whit all data. The operation, by default, creates all tables')
-def main(migrate):
-    if migrate == "create_table":
+def main(table):
+    if table == "create":
         models.Users.createTable(ifNotExists=True)
         models.UsersSettings.createTable(ifNotExists=True)
         models.CurrentWeather.createTable(ifNotExists=True)
         models.ForecastWeather.createTable(ifNotExists=True)
         models.OnecallWeather.createTable(ifNotExists=True)
         models.CityList.createTable(ifNotExists=True)
-    elif migrate == "delete_table":
-        models.Users.dropTable()
-        models.UsersSettings.dropTable()
-        models.CurrentWeather.dropTable()
-        models.ForecastWeather.dropTable()
-        models.OnecallWeather.dropTable()
-        models.CityList.dropTable()
+    elif table == "delete":
+        models.Users.dropTable(
+            ifExists=True, dropJoinTables=True, cascade=True)
+        models.UsersSettings.dropTable(
+            ifExists=True, dropJoinTables=True, cascade=True)
+        models.CurrentWeather.dropTable(
+            ifExists=True, dropJoinTables=True, cascade=True)
+        models.ForecastWeather.dropTable(
+            ifExists=True, dropJoinTables=True, cascade=True)
+        models.OnecallWeather.dropTable(
+            ifExists=True, dropJoinTables=True, cascade=True)
+        models.CityList.dropTable(
+            ifExists=True, dropJoinTables=True, cascade=True)
     else:
         return
 
