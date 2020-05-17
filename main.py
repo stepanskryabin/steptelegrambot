@@ -12,6 +12,7 @@ from telebot.types import InlineQueryResultArticle
 from telebot.types import InputTextMessageContent
 from translitua import translit
 from translitua import RussianInternationalPassport1997
+import sqlobject as orm
 
 import botconfig
 from botsearch import search_weather
@@ -27,6 +28,20 @@ from botbase import write_forecast
 
 
 bot = TeleBot(botconfig.TELEGRAM_TOKEN_API)
+
+"""
+    Choose the option to connect to the database, where:
+    LOCAL_SQLITE: the bot_database.db file will be created
+    in the local directory
+    LOCAL_POSTGRESQL: a connection to a local server will be made
+    ONLINE_POSTGRESQL: a connection will be made to a server hosted
+    on the Internet.
+
+    The settings are in the file botconfig.py
+"""
+connection = orm.connectionForURI(botconfig.ONLINE_POSTGRESQL)
+orm.sqlhub.processConnection = connection
+
 
 # Return information about StepTelegramBot
 @bot.message_handler(commands=['start'])
@@ -67,18 +82,18 @@ def handler_command_adduser(message: Message):
             message.from_user.language_code,
             message.from_user.is_bot]
     dbquery = Users.select(
-        Users.q.userId == data[0])
+        Users.q.userID == data[0])
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.USER_ALREDY_REGISTERED.format(
                              dbquery[0].userName,
-                             dbquery[0].userId))
+                             dbquery[0].userID))
     else:
         write_users(data)
         bot.send_message(message.chat.id,
                          botconfig.USER_IS_REGISTERED.format(
-                             dbquery[0].userName,
-                             dbquery[0].userId))
+                             message.from_user.username,
+                             message.from_user.id))
     return
 
 
@@ -86,16 +101,16 @@ def handler_command_adduser(message: Message):
 @bot.edited_message_handler(commands=['deluser'])
 def handler_command_deluser(message: Message):
     dbquery = Users.select(
-        Users.q.userId == message.from_user.id)
+        Users.q.userID == message.from_user.id)
     if bool(dbquery.count()):
         Users.delete(dbquery[0].id)
         bot.send_message(message.chat.id, botconfig.USER_IS_DELETED.format(
-            dbquery[0].userName,
-            dbquery[0].userId))
+            message.from_user.username,
+            message.from_user.id))
     else:
         bot.send_message(message.chat.id, botconfig.USER_NOT_EXIST.format(
-            dbquery[0].userName,
-            dbquery[0].userId))
+            message.from_user.username,
+            message.from_user.id))
     return
 
 
@@ -104,11 +119,12 @@ def handler_command_deluser(message: Message):
 def handler_command_chepetsk(message: Message):
     result = search_weather(town='Kirovo-Chepetsk', option='current')
     if result['cod'] == 200:
+        print(result['sys']['country'])
         write_current(result)
         dbquery = CurrentWeather.select(
             CurrentWeather.q.dateTime == result['dt'])
         bot.send_message(message.chat.id,
-                         botconfig.WEATHER_MESSAGE.format(
+                         botconfig.CURRENT_WEATHER_MESSAGE.format(
                              replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
@@ -133,7 +149,7 @@ def handler_command_kirov(message: Message):
         dbquery = CurrentWeather.select(
             CurrentWeather.q.dateTime == result['dt'])
         bot.send_message(message.chat.id,
-                         botconfig.WEATHER_MESSAGE.format(
+                         botconfig.CURRENT_WEATHER_MESSAGE.format(
                              replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
@@ -165,8 +181,8 @@ def handler_command_current(message: Message):
         dateTime=result['dt'], cityName=town)
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
-                         botconfig.WEATHER_MESSAGE.format(
-                             dbquery[0].cityName,
+                         botconfig.CURRENT_WEATHER_MESSAGE.format(
+                             replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
                              dbquery[0].mainTemp,
@@ -199,7 +215,7 @@ def handler_command_forecast(message: Message):
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.FORECAST_WEATHER_MESSAGE.format(
-                             dbquery[0].cityName,
+                             replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
                              dbquery[0].mainTemp,
@@ -234,7 +250,7 @@ def handler_command_onecall(message: Message):
     if bool(dbquery.count()):
         bot.send_message(message.chat.id,
                          botconfig.ONECALL_WEATHER_MESSAGE.format(
-                             dbquery[0].cityName,
+                             replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
                              dbquery[0].mainTemp,
@@ -260,7 +276,7 @@ def handler_command_text(message: Message):
         dbquery = CurrentWeather.select(
             CurrentWeather.q.dateTime == result['dt'])
         bot.send_message(message.chat.id,
-                         botconfig.WEATHER_MESSAGE.format(
+                         botconfig.CURRENT_WEATHER_MESSAGE.format(
                              replace_name(dbquery[0].cityName),
                              dbquery[0].weatherDescription,
                              botconfig.EMOJI_DICT[dbquery[0].weatherId],
