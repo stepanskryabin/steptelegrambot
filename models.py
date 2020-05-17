@@ -10,21 +10,20 @@ class Users(orm.SQLObject):
     """
         Table where we store user registration data.
     """
-    userId = orm.IntCol(unique=True)
+    userID = orm.IntCol(unique=True)
     userFirstName = orm.StringCol()
     userLastName = orm.StringCol()
     userName = orm.StringCol()
     languageCode = orm.StringCol()
     isBot = orm.BoolCol()
-    #
-    settings = orm.ForeignKey('UserSettings')
+    usersSettings = orm.MultipleJoin('UsersSettings', joinColumn='user_id')
 
 
 class UsersSettings(orm.SQLObject):
     """
         Table contents personal settings from users
     """
-    userId = orm.IntCol()
+    user = orm.ForeignKey('Users')
     userTown = orm.StringCol()
     userPassword = orm.StringCol()
     townLon = orm.FloatCol()
@@ -32,7 +31,6 @@ class UsersSettings(orm.SQLObject):
     remindTime = orm.IntCol()
     remindDay = orm.IntCol()
     remindQuantity = orm.IntCol()
-    Users = orm.MultipleJoin('Users')
 
 
 class CurrentWeather(orm.SQLObject):
@@ -62,12 +60,9 @@ class CurrentWeather(orm.SQLObject):
     mainTempMax = orm.FloatCol()
     mainPressure = orm.IntCol()
     mainHumidity = orm.IntCol()
-    visibility = orm.IntCol()
     windSpeed = orm.FloatCol()
     windDeg = orm.IntCol()
     cloudsAll = orm.IntCol()
-    sysType = orm.IntCol()
-    sysId = orm.IntCol()
 
 
 class ForecastWeather(orm.SQLObject):
