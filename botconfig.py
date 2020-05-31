@@ -9,7 +9,7 @@ CONSTANT_PA_TO_MPM: float = 7.5006E-3
 
 # Configuring database access
 # SQLite3
-LOCAL_SQLITE = 'sqlite:' + os.path.abspath('bot_database.db')
+LOCAL_SQLITE = ''.join(['sqlite:', os.path.abspath('bot_database.db')])
 # PostgreSQL
 LOCAL_POSTGRESQL = 'postgres://testdb:123456@127.0.0.1/test_telegrambot'
 # PostgreSQL
@@ -21,6 +21,8 @@ WEATHER_TOKEN_API = os.getenv('WEATHER_API')
 # Configuring Telegram access
 TELEGRAM_TOKEN_API = os.getenv('BOT_API')
 
+# City list
+CITY_LIST = os.path.abspath('city.list.json')
 
 # Logging module settings
 #
@@ -202,6 +204,14 @@ INFO_NOT_FOUND = "Информация не найдена"
 
 FUNCTION_FOR_REGISTERED_USER = "Функция доступна только зарегистрированному \
     пользователю"
+
+USER_INFO = "Персональные настройки:\
+    ID: {}\
+    Город: {}, долгота - {}, широта - {}\
+    Настройки оповещения:\
+        периодичность (часы) - {}\
+        периодичность (дни) - {}\
+        периодичность (количество раз) - {}"
 
 if __name__ == '__main__':
     print('This module does not need to be run as a separate process.')
