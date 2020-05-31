@@ -10,7 +10,10 @@ import botconfig
 
 def search_weather(town, option, lon=None, lat=None):
     """
-
+    town: string type, mandatory parameter
+    option: string type, mandatory parameter
+    lon: int type, default=None
+    lat: int type, default=None
     """
     url = {"current": 'https://api.openweathermap.org/data/2.5/weather?',
            "onecall": 'https://api.openweathermap.org/data/2.5/onecall?',
@@ -39,26 +42,26 @@ def search_weather(town, option, lon=None, lat=None):
     return data
 
 
-def replace_name(town):
+def replace_name(word):
     """
         Return city name with replace end of word
+        word: string type
     """
-    word: str = town
     if word[-2:] == 'ий':
-        new_word: str = word.replace(word[-2:], 'ом')
+        new_word = word.replace(word[-2:], 'ом')
     elif word[-1:] in ['а', 'o', 'у', 'ъ', 'ь', 'ю', 'э', 'й', 'я']:
-        new_word: str = word.replace(word[-1:], 'е')
+        new_word = word.replace(word[-1:], 'е')
     elif word[-1:] == 'ь':
-        new_word: str = word.replace(word[-1:], 'и')
+        new_word = word.replace(word[-1:], 'и')
     elif word[-1:] in ['ы', 'и']:
-        new_word: str = word.replace(word[-1:], 'ах')
+        new_word = word.replace(word[-1:], 'ах')
     elif word[-1:] in ['в', 'к', 'р', 'н', 'с', 'т',
                        'л', 'ш', 'щ', 'з', 'х', 'п',
                        'д', 'ж', 'ч', 'м', 'б', 'г'
                        ]:
-        new_word: str = word + 'е'
+        new_word = word + 'е'
     else:
-        new_word: str = word
+        new_word = word
     return new_word
 
 
