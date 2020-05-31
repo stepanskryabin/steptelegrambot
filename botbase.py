@@ -3,9 +3,15 @@
 # Autor: Stepan Skriabin - stepan.skrjabin@gmail.com
 # Create and work with database
 
+import json
+
 from models import Users
 from models import CurrentWeather
 from models import ForecastWeather
+from models import OnecallWeather
+from models import OnecallHourlyWeather
+from models import OnecallDailyWeather
+from models import CityList
 
 
 def write_users(data):
@@ -46,8 +52,7 @@ def write_current(data):
         )
 
 
-def write_forecast(**kwargs):
-    data = kwargs
+def write_forecast(data):
     for i in range(40):
         ForecastWeather(cityId=data['city']['id'],
                         cityName=data['city']['name'],
@@ -80,8 +85,88 @@ def write_forecast(**kwargs):
                         )
 
 
-def write_onecall():
-    pass
+def write_onecall(data):
+    OnecallWeather(
+        # Default name from DB column
+        lon=data['lon'],
+        lat=data['lat'],
+        timezone=data['timezone'],
+        # Current
+        currentSunrise=data['current']['sunrise'],
+        currentSunset=data['current']['sunset'],
+        currentDateTime=data['current']['dt'],
+        currentTemp=data['current']['temp'],
+        currentFeelsLike=data['current']['feels_like'],
+        currentPressure=data['current']['pressure'],
+        currentHumidity=data['current']['humidity'],
+        currentDewPoint=data['current']['dew_point'],
+        currentUvi=data['current']['uvi'],
+        currentClouds=data['current']['clouds'],
+        currentVisibility=data['current']['visibility'],
+        currentWindSpeed=data['current']['wind_speed'],
+        currentWindDeg=data['current']['wind_deg'],
+        currentWeatherId=data['current']['weather'][0]['id'],
+        currentWeatherMain=data['current']['weather'][0]['main'],
+        currentWeatherDescription=data['current']['weather'][0]['description'],
+        currentWeatherIcon=data['current']['weather'][0]['icon'])
+    for i in range(48):
+        OnecallHourlyWeather(
+            hourlyDateTime=data['hourly'][i]['dt'],
+            hourlyTemp=data['hourly'][i]['temp'],
+            hourlyFeelsLike=data['hourly'][i]['feels_like'],
+            hourlyPressure=data['hourly'][i]['pressure'],
+            hourlyHumidity=data['hourly'][i]['humidity'],
+            hourlyDewPoint=data['hourly'][i]['dew_point'],
+            hourlyClouds=data['hourly'][i]['cloudst'],
+            hourlyWindSpeed=data['hourly'][i]['wind_speed'],
+            hourlyWindDeg=data['hourly'][i]['wind_deg'],
+            hourlyWeatherId=data['hourly'][i]['weather'][0]['id'],
+            hourlyWeatherMain=data['hourly'][i]['weather'][0]['main'],
+            hourlyWeatherDescription=data['hourly'][i]['weather'][0]['description'],
+            hourlyWeatherIcon=data['hourly'][i]['weather'][0]['icon']
+            )
+
+    for j in range(8):
+        OnecallDailyWeather(
+            dailyDateTime=data['daily'][j]['dt'],
+            dailySunrise=data['daily'][j]['sunrise'],
+            dailySunset=data['daily'][j]['sunset'],
+            dailyTempDay=data['daily'][j]['temp']['day'],
+            dailyTempMin=data['daily'][j]['temp']['min'],
+            dailyTempMax=data['daily'][j]['temp']['max'],
+            dailyTempNight=data['daily'][j]['temp']['night'],
+            dailyTempEvening=data['daily'][j]['temp']['eve'],
+            dailyTempMorning=data['daily'][j]['temp']['morn'],
+            dailyFeelsLikeDay=data['daily'][j]['feels_like']['day'],
+            dailyFeelsLikeNight=data['daily'][j]['feels_like']['night'],
+            dailyFeelsLikeEvening=data['daily'][j]['feels_like']['eve'],
+            dailyFeelsLikeMorning=data['daily'][j]['feels_like']['morn'],
+            dailyPressure=data['daily'][j]['pressure'],
+            dailyHumidity=data['daily'][j]['humidity'],
+            dailyDewPoint=data['daily'][j]['dew_point'],
+            dailyWindSpeed=data['daily'][j]['wind_speed'],
+            dailyWindDeg=data['daily'][j]['wind_deg'],
+            dailyWeatherId=data['daily'][j]['weather'][0]['id'],
+            dailyWeatherMain=data['daily'][j]['weather'][0]['main'],
+            dailyWeatherDescription=data['daily'][j]['weather'][0]['description'],
+            dailyWeatherIcon=data['daily'][j]['weather'][0]['icon'],
+            dailyClouds=data['daily'][j]['clouds'],
+            dailyRain=data['daily'][j]['rain'],
+            dailyUvi=data['daily'][j]['uvi']
+            )
+
+
+def update_city_list(data):
+    with open(data, 'r', encoding='utf-8') as json_file:
+        city = json.load(json_file)
+        for i in range(len(city)):
+            CityList(cityId=city[i]['id'],
+                     cityName=city[i]['name'],
+                     state=city[i]['state'],
+                     country=city[i]['country'],
+                     lon=city[i]['coord']['lon'],
+                     lat=city[i]['coord']['lat'])
+    return
 
 
 if __name__ == '__main__':
