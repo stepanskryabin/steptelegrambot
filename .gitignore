@@ -143,3 +143,7 @@ dmypy.json
 
 # Sqlite stuff
 *.db
+*.db-journal
+
+# JSON stuff
+*.json
