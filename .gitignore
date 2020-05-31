@@ -147,3 +147,6 @@ dmypy.json
 
 # JSON stuff
 *.json
+
+# Other stuff
+/.handler-saves
