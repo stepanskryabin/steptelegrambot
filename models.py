@@ -124,6 +124,11 @@ class OnecallWeather(orm.SQLObject):
     currentWeatherMain = orm.StringCol()
     currentWeatherDescription = orm.StringCol()
     currentWeatherIcon = orm.StringCol()
+
+
+class OnecallHourlyWeather(orm.SQLObject):
+    """
+    """
     # Hourly
     hourlyDateTime = orm.IntCol()
     hourlyTemp = orm.FloatCol()
@@ -138,6 +143,11 @@ class OnecallWeather(orm.SQLObject):
     hourlyWeatherMain = orm.StringCol()
     hourlyWeatherDescription = orm.StringCol()
     hourlyWeatherIcon = orm.StringCol()
+
+
+class OnecallDailyWeather(orm.SQLObject):
+    """
+    """
     # Daily
     dailyDateTime = orm.IntCol()
     dailySunrise = orm.IntCol()
@@ -146,12 +156,12 @@ class OnecallWeather(orm.SQLObject):
     dailyTempMin = orm.FloatCol()
     dailyTempMax = orm.FloatCol()
     dailyTempNight = orm.FloatCol()
-    dailyTempEve = orm.FloatCol()
-    dailyTempMorn = orm.FloatCol()
+    dailyTempEvening = orm.FloatCol()
+    dailyTempMorning = orm.FloatCol()
     dailyFeelsLikeDay = orm.FloatCol()
     dailyFeelsLikeNight = orm.FloatCol()
-    dailyFeelsLikeEve = orm.FloatCol()
-    dailyFeelsLikeMorn = orm.FloatCol()
+    dailyFeelsLikeEvening = orm.FloatCol()
+    dailyFeelsLikeMorning = orm.FloatCol()
     dailyPressure = orm.IntCol()
     dailyHumidity = orm.IntCol()
     dailyDewPoint = orm.FloatCol()
@@ -162,6 +172,7 @@ class OnecallWeather(orm.SQLObject):
     dailyWeatherDescription = orm.StringCol()
     dailyWeatherIcon = orm.StringCol()
     dailyClouds = orm.IntCol()
+    dailyRain = orm.FloatCol()
     dailyUvi = orm.FloatCol()
 
 
