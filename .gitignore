@@ -143,3 +143,13 @@ dmypy.json
 
 # Sqlite stuff
 *.db
+*.db-journal
+
+# JSON stuff
+*.json
+
+# Other stuff
+/.handler-saves
+
+# Ngrok
+ngrok.exe
