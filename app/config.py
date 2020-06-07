@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# CONFIG FILE
-
 import os
 
 # Pascal to mercury pole millimeters conversion constant
@@ -205,13 +201,18 @@ INFO_NOT_FOUND = "Информация не найдена"
 FUNCTION_FOR_REGISTERED_USER = "Функция доступна только зарегистрированному \
     пользователю"
 
-USER_INFO = "Персональные настройки:\
-    ID: {}\
-    Город: {}, долгота - {}, широта - {}\
-    Настройки оповещения:\
-        периодичность (часы) - {}\
-        периодичность (дни) - {}\
-        периодичность (количество раз) - {}"
+USER_SETTINGS_INFO = "Персональные настройки:\
+    \nID: {}\
+    \nИмя: {}\
+    \nФамилия: {}\
+    \nЛогин: {}\
+    \nЯзык: {}\
+    \nГород: {}\
+    \nПароль: {}\
+    \nНастройки оповещения:\
+    \n    периодичность (часы) - {}\
+    \n    периодичность (дни) - {}\
+    \n    периодичность (количество раз) - {}"
 
 if __name__ == '__main__':
     print('This module does not need to be run as a separate process.')
