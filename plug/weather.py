@@ -1,11 +1,11 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Autor: Stepan Skriabin - stepan.skrjabin@gmail.com
 # Search weather on the openweathermap.org
 
 import requests
-
-import botconfig
+from translitua import translit
+from translitua import RussianInternationalPassport1997
+import app.config as config
 
 
 def search_weather(town, option, lon=None, lat=None):
@@ -15,11 +15,12 @@ def search_weather(town, option, lon=None, lat=None):
     lon: int type, default=None
     lat: int type, default=None
     """
+    town = translit(town, RussianInternationalPassport1997)
     url = {"current": 'https://api.openweathermap.org/data/2.5/weather?',
            "onecall": 'https://api.openweathermap.org/data/2.5/onecall?',
            "forecast": 'https://api.openweathermap.org/data/2.5/forecast?'
            }
-    token = botconfig.WEATHER_TOKEN_API
+    token = config.WEATHER_TOKEN_API
     parametres = {'current':
                   {'q': town,
                    'appid': token,
