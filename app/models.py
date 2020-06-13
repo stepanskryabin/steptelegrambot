@@ -6,9 +6,6 @@ import sqlobject as orm
 
 
 class User(orm.SQLObject):
-    """
-        Table where we store user registration data.
-    """
     userID = orm.IntCol(unique=True)
     userFirstName = orm.StringCol()
     userLastName = orm.StringCol()
@@ -16,10 +13,11 @@ class User(orm.SQLObject):
     languageCode = orm.StringCol()
     isBot = orm.BoolCol()
     userTown = orm.StringCol()
-    userPassword = orm.StringCol()
+    userPassword = orm.BLOBCol()
     remindTime = orm.IntCol()
     remindDay = orm.IntCol()
     remindQuantity = orm.IntCol()
+    salt = orm.BLOBCol()
 
 
 class AppConfig(orm.SQLObject):
