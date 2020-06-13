@@ -14,7 +14,12 @@ from telebot.types import KeyboardButton
 import sqlobject as orm
 
 import app.config as config
-from app.controller import check_user, write_user, delete_user, read_user
+from app.controller import check_user_in_db
+from app.controller import write_user_in_db
+from app.controller import delete_user_in_db
+from app.controller import read_user_in_db
+from app.controller import hash_password
+from app.controller import UserConfig
 
 from plug.weather import search_weather, replace_name
 
@@ -54,29 +59,24 @@ def handler_command_help(message: Message):
     return
 
 
-
-    bot.send_message(message.chat.id,
-                     config.REGISTER_MESSAGE,
-                     parse_mode='HTML')
-    return
-
-
 # Reply markup Keyboard
 @bot.message_handler(commands=['menu'])
 def markupConfig(message: Message):
+    # "Back to menu" button
+    backbtn = KeyboardButton('Назад в главное меню')
     # Main menu
     main_menu = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     mainbtn1 = KeyboardButton('Погода')
     mainbtn2 = KeyboardButton('Настройки')
     mainbtn3 = KeyboardButton('Убрать меню')
-    main_menu.add(mainbtn1, mainbtn2, mainbtn3)
+    mainbtn4 = KeyboardButton('Тест')
+    main_menu.add(mainbtn1, mainbtn2, mainbtn3, mainbtn4)
     # Weather menu
     weather_menu = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     weatherbtn1 = KeyboardButton('Киров')
     weatherbtn2 = KeyboardButton('Кирово-Чепецк')
     weatherbtn3 = KeyboardButton('Ввести город')
-    weatherbtn4 = KeyboardButton('Назад в главное меню')
-    weather_menu.add(weatherbtn1, weatherbtn2, weatherbtn3, weatherbtn4)
+    weather_menu.add(weatherbtn1, weatherbtn2, weatherbtn3, backbtn)
     # Configuration menu
     config_menu = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     configbtn1 = KeyboardButton('Регистрация')
@@ -84,246 +84,311 @@ def markupConfig(message: Message):
     configbtn3 = KeyboardButton('Показать настройки')
     configbtn4 = KeyboardButton('Месторасположение')
     configbtn5 = KeyboardButton('Уведомление')
-    configbtn6 = KeyboardButton('Назад в главное меню')
     config_menu.add(configbtn1, configbtn2, configbtn3, configbtn4, configbtn5,
-                    configbtn6)
-    # City menu
+                    backbtn)
+    # City config menu
     сity_menu = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     сitybtn1 = KeyboardButton('Указать место')
     сitybtn2 = KeyboardButton('Определить место')
-    сitybtn3 = KeyboardButton('Назад в главное меню')
-    сity_menu.add(сitybtn1, сitybtn2, сitybtn3)
+    сity_menu.add(сitybtn1, сitybtn2, backbtn)
     # Notice
     notice_menu = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     noticebtn1 = KeyboardButton('Каждый час')
     noticebtn2 = KeyboardButton('Утром и вечером')
     noticebtn3 = KeyboardButton('Отключить')
-    noticebtn4 = KeyboardButton('Назад в главное меню')
-    notice_menu.add(noticebtn1, noticebtn2, noticebtn3, noticebtn4)
+    notice_menu.add(noticebtn1, noticebtn2, noticebtn3, backbtn)
+    # Input menu
+    input_menu = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    input_menu.add(backbtn)
+    # Test
+    test_menu = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    testbtn1 = KeyboardButton('Тест1')
+    testbtn2 = KeyboardButton('Тест2')
+    testbtn3 = KeyboardButton('Тест3')
+    testbtn4 = KeyboardButton('Тест4')
+    test_menu.add(testbtn1, testbtn2, testbtn3, testbtn4)
+
+    def back_to_main_menu(message):
+        msg = bot.reply_to(message, 'Возвращаемся в главное меню',
+                           reply_markup=main_menu)
+        bot.register_next_step_handler(msg, mainMenu)
+        return
+
+    def remove_menu(message):
+        del_markup = ReplyKeyboardRemove(selective=False)
+        bot.send_message(message.chat.id, 'Для возврата в меню: /menu',
+                         reply_markup=del_markup)
+
+    def inputMenu(message: Message):
+        if message.text == 'Назад в главное меню':
+            back_to_main_menu(message)
+            return
+        else:
+            result = search_weather(message.text, option='current')
+            if result['cod'] == 200:
+                bot.send_message(message.chat.id,
+                                 config.CURRENT_WEATHER_MESSAGE.format(
+                                  replace_name(result['name']),
+                                  result['weather'][0]['description'],
+                                  config.EMOJI_DICT[result['weather'][0]['id']],
+                                  result['main']['temp'],
+                                  result['main']['feels_like'],
+                                  result['main']['pressure'],
+                                  result['main']['humidity'],
+                                  result['clouds']['all'],
+                                  result['wind']['speed']),
+                                 parse_mode='HTML')
+            else:
+                bot.send_message(message.chat.id, config.INFO_NOT_FOUND)
+            msg = bot.reply_to(message,
+                               'Попробуйте снова',
+                               reply_markup=input_menu)
+            bot.register_next_step_handler(msg, inputMenu)
+            return
 
     def noticeMenu(message: Message):
-        text = message.text
-        if text == 'Каждый час':
+        if message.text == 'Каждый час':
             msg = bot.reply_to(message, 'НЕРАБОТАЕТ')
             bot.register_next_step_handler(msg, markupConfig)
-        elif text == 'Утром и вечером':
+        elif message.text == 'Утром и вечером':
             msg = bot.reply_to(message, 'НЕРАБОТАЕТ')
             bot.register_next_step_handler(msg, markupConfig)
-        elif text == 'Отключить':
+        elif message.text == 'Отключить':
             msg = bot.reply_to(message, 'НЕРАБОТАЕТ')
             bot.register_next_step_handler(msg, markupConfig)
-        elif text == 'Назад в главное меню':
-            msg = bot.reply_to(message, 'НЕРАБОТАЕТ', reply_markup=main_menu)
-            bot.register_next_step_handler(msg, markupConfig)
+        elif message.text == 'Назад в главное меню':
+            back_to_main_menu(message)
         else:
             return
 
     def сityMenu(message: Message):
-        text = message.text
-        if text == 'Указать место':
+        if message.text == 'Указать место':
             msg = bot.reply_to(message, 'НЕРАБОТАЕТ')
             bot.register_next_step_handler(msg, markupConfig)
-        elif text == 'Определить место':
+        elif message.text == 'Определить место':
             msg = bot.reply_to(message, 'НЕРАБОТАЕТ')
             bot.register_next_step_handler(msg, markupConfig)
-        elif text == 'Назад в главное меню':
-            msg = bot.reply_to(message, 'НЕРАБОТАЕТ', reply_markup=main_menu)
-            bot.register_next_step_handler(msg, markupConfig)
+        elif message.text == 'Назад в главное меню':
+            back_to_main_menu(message)
         else:
             return
 
     def configMenu(message: Message):
-        text: str = message.text
-        user: dict = {
-                'id': message.from_user.id,
-                'first_name': message.from_user.first_name,
-                'last_name': message.from_user.last_name,
-                'username': message.from_user.username,
-                'language_code': message.from_user.language_code,
-                'is_bot': message.from_user.is_bot,
-                'town': None,
-                'password': None,
-                'time': None,
-                'day': None,
-                'quantity': None
-                  }
-        while True:
-            if text == 'Регистрация':
-                if check_user(user['id']):
-                    bot.send_message(user['id'],
-                                     config.USER_ALREDY_REGISTERED.format(
-                                      user['username'],
-                                      user['id'])
-                                     )
-                else:
-                    write_user(user)
-                    bot.send_message(user['id'],
+        user_id = message.from_user.id
+        username = message.from_user.username
+        if message.text == 'Регистрация':
+            if check_user_in_db(user_id):
+                bot.send_message(user_id,
+                                 config.USER_ALREDY_REGISTERED.format(
+                                  username,
+                                  user_id)
+                                 )
+            else:
+                user = UserConfig(message.from_user.id)
+                user.first_name = message.from_user.first_name
+                user.last_name = message.from_user.last_name
+                user.username = message.from_user.username
+                user.language_code = message.from_user.language_code
+                user.is_bot = message.from_user.is_bot
+
+                def step_town(message):
+                    town: str = message.text
+                    if town.isdigit():
+                        msg = bot.reply_to(message, 'Это не незвание города, попробуйте повторно')
+                        bot.register_next_step_handler(msg, step_town)
+                    user.town = message.text
+                    msg = bot.reply_to(message, 'Шаг 2: введите пароль')
+                    bot.register_next_step_handler(msg, step_password)
+
+                def step_password(message):
+                    if len(message.text) < 6:
+                        msg = bot.reply_to(message, 'Длинна пароля должна быть от 7 и более символов')
+                        bot.register_next_step_handler(msg, step_password)
+                    password = hash_password(message.text)
+                    user.password = password['hash']
+                    user.salt = password['salt']
+                    msg = bot.reply_to(message, 'Шаг 3: введите периодичность вывода прогноза погоды, количестве раз в день')
+                    bot.register_next_step_handler(msg, step_time)
+
+                def step_time(message):
+                    time: str = message.text
+                    if not time.isdigit():
+                        msg = bot.reply_to(message, 'Неверные данные, повторите ввод')
+                        bot.register_next_step_handler(msg, step_time)
+                    user.time = int(message.text)
+                    msg = bot.reply_to(message, 'Шаг 4: введите количество дней на которые нужен прогноз')
+                    bot.register_next_step_handler(msg, step_day)
+
+                def step_day(message):
+                    day: str = message.text
+                    if not day.isdigit():
+                        msg = bot.reply_to(message, 'Неверные данные, повторите ввод')
+                        bot.register_next_step_handler(msg, step_day)
+                    user.day = int(message.text)
+                    msg = bot.reply_to(message, 'Шаг 5: введите quantity')
+                    bot.register_next_step_handler(msg, step_quantity)
+
+                def step_quantity(message):
+                    quantity: str = message.text
+                    if not quantity.isdigit():
+                        msg = bot.reply_to(message, 'Неверные данные, повторите ввод')
+                        bot.register_next_step_handler(msg, step_quantity)
+                    user.quantity = int(message.text)
+                    write_user_in_db(user.all_data())
+                    bot.send_message(user_id,
                                      config.USER_IS_REGISTERED.format(
-                                      user['username'],
-                                      user['id'])
+                                      message.from_user.username,
+                                      message.from_user.id)
                                      )
-                msg = bot.reply_to(message, 'ЗАГЛУШКА1111', reply_markup=config_menu)
-                bot.register_next_step_handler(msg, configMenu)
-                break
-            elif text == 'Удаление':
-                if check_user(user['id']):
-                    delete_user(user['id'])
-                    bot.send_message(message.chat.id,
-                                     config.USER_IS_DELETED.format(
-                                      user['username'],
-                                      user['id'])
-                                     )
+                    msg = bot.reply_to(message, 'ЗАГЛУШКА1111', reply_markup=config_menu)
+                    bot.register_next_step_handler(msg, configMenu)
+
+                msg = bot.reply_to(message, 'Шаг 1: укажите город')
+                bot.register_next_step_handler(msg, step_town)
+
+        elif message.text == 'Удаление':
+            if check_user_in_db(user_id):
+                delete_user_in_db(user_id)
+                bot.send_message(message.chat.id,
+                                 config.USER_IS_DELETED.format(
+                                  username,
+                                  user_id)
+                                 )
+            else:
+                bot.send_message(message.chat.id,
+                                 config.USER_NOT_EXIST.format(
+                                  username,
+                                  user_id)
+                                 )
+            msg = bot.reply_to(message, 'ЗАГЛУШКА2222222', reply_markup=config_menu)
+            bot.register_next_step_handler(msg, configMenu)
+        elif message.text == 'Показать настройки':
+            def check_password(message):
+                passw = message.text
+                print(passw)
+                settings: dict = read_user_in_db(user_id)
+                old_password = settings['password']
+                old_salt = settings['salt']
+                print(old_password, old_salt)
+                new_password = hash_password(message.text, settings['salt'])
+                if new_password['hash'] == settings['password']:
+                    bot.send_message(user_id, config.USER_SETTINGS_INFO.format(
+                                  settings['id'],
+                                  settings['first_name'],
+                                  settings['last_name'],
+                                  settings['username'],
+                                  settings['language_code'],
+                                  settings['town'],
+                                  settings['password'],
+                                  settings['time'],
+                                  settings['day'],
+                                  settings['quantity']), parse_mode='HTML')
                 else:
                     bot.send_message(message.chat.id,
                                      config.USER_NOT_EXIST.format(
-                                      user['username'],
-                                      user['id'])
-                                     )
-                msg = bot.reply_to(message, 'ЗАГЛУШКА2222222', reply_markup=config_menu)
-                bot.register_next_step_handler(msg, configMenu)
-                break
-            elif text == 'Показать настройки':
-                if check_user(user['id']):
-                    settings: dict = read_user(user['id'])
-                    bot.send_message(user['id'], config.USER_SETTINGS_INFO.format(
-                                      settings['id'],
-                                      settings['first_name'],
-                                      settings['last_name'],
-                                      settings['username'],
-                                      settings['language_code'],
-                                      settings['town'],
-                                      settings['password'],
-                                      settings['time'],
-                                      settings['day'],
-                                      settings['quantity']), parse_mode='HTML')
-                else:
-                    bot.send_message(message.chat.id,
-                                     config.USER_NOT_EXIST.format(
-                                      user['username'],
-                                      user['id'])
+                                      username,
+                                      user_id)
                                      )
                 msg = bot.reply_to(message, 'ЗАГЛУШКА333333', reply_markup=config_menu)
                 bot.register_next_step_handler(msg, configMenu)
-                break
-            elif text == 'Месторасположение':
-                msg = bot.reply_to(message, 'ЗАГЛУШКА', reply_markup=сity_menu)
-                bot.register_next_step_handler(msg, сityMenu)
-                break
-            elif text == 'Уведомление':
-                msg = bot.reply_to(message, 'ЗАГЛУШКА', reply_markup=notice_menu)
-                bot.register_next_step_handler(msg, noticeMenu)
-                break
-            elif text == 'Назад в главное меню':
-                msg = bot.reply_to(message, 'ЗАГЛУШКА', reply_markup=main_menu)
-                bot.register_next_step_handler(msg, markupConfig)
-                break
+
+            msg = bot.reply_to(message, 'Введите пароль')
+            bot.register_next_step_handler(msg, check_password)
+
+        elif message.text == 'Месторасположение':
+            msg = bot.reply_to(message, 'ЗАГЛУШКА', reply_markup=сity_menu)
+            bot.register_next_step_handler(msg, сityMenu)
+        elif message.text == 'Уведомление':
+            msg = bot.reply_to(message, 'ЗАГЛУШКА', reply_markup=notice_menu)
+            bot.register_next_step_handler(msg, noticeMenu)
+        elif message.text == 'Назад в главное меню':
+            back_to_main_menu(message)
         else:
             return
 
     def weatherMenu(message: Message):
-        text: str = message.text
-        while True:
-            if text == 'Назад в главное меню':
-                bot.send_message(message, 'Возврат в главное меню', reply_markup=main_menu)
-                bot.register_next_step_handler(message, markupConfig)
-                break
-            elif text == 'Киров':
-                result = search_weather(message.text, option='current')
-                if result['cod'] == 200:
-                    bot.send_message(message.chat.id,
-                                     config.CURRENT_WEATHER_MESSAGE.format(
-                                      replace_name(result['name']),
-                                      result['weather'][0]['description'],
-                                      config.EMOJI_DICT[result['weather'][0]['id']],
-                                      result['main']['temp'],
-                                      result['main']['feels_like'],
-                                      result['main']['pressure'],
-                                      result['main']['humidity'],
-                                      result['clouds']['all'],
-                                      result['wind']['speed']),
-                                     parse_mode='HTML')
-                else:
-                    bot.send_message(message.chat.id, config.INFO_NOT_FOUND)
-                bot.send_message(message,
-                                 f'Команда {message.text} не распознана',
-                                 reply_markup=weather_menu)
-                bot.register_next_step_handler(message, weatherMenu)
-                break
-            elif text == 'Кирово-Чепецк':
-                result = search_weather(message.text, option='current')
-                if result['cod'] == 200:
-                    bot.send_message(message.chat.id,
-                                     config.CURRENT_WEATHER_MESSAGE.format(
-                                      replace_name(result['name']),
-                                      result['weather'][0]['description'],
-                                      config.EMOJI_DICT[result['weather'][0]['id']],
-                                      result['main']['temp'],
-                                      result['main']['feels_like'],
-                                      result['main']['pressure'],
-                                      result['main']['humidity'],
-                                      result['clouds']['all'],
-                                      result['wind']['speed']),
-                                     parse_mode='HTML')
-                else:
-                    bot.send_message(message.chat.id, config.INFO_NOT_FOUND)
-                bot.send_message(message,
-                                 f'Команда {message.text} не распознана',
-                                 reply_markup=weather_menu)
-                bot.register_next_step_handler(message, weatherMenu)
-                break
-            elif text == 'Ввести город':
-                del_markup = ReplyKeyboardRemove(selective=False)
-                bot.send_message(message.chat.id, 'Для выхода, наберите слово стоп', reply_markup=del_markup)
-                """ stop = ['Стоп', 'СТОП', 'стоп', 'stop', 'STOP', 'Stop']
-                @bot.message_handler(content_types=['text'])
-                @bot.edited_message_handler(content_types=['text'])
-                def handler_command_text(message: Message):
-                    while True:
-                        if message.text == '1':
-                            msg = bot.reply_to(message, 'ВЫХОД', reply_markup=weather_menu)
-                            bot.register_next_step_handler(msg, weatherMenu)
-                            return
-                        else:
-                            result = search_weather(message.text, option='current')
-                            if result['cod'] == 200:
-                                bot.send_message(message.chat.id,
-                                                 config.CURRENT_WEATHER_MESSAGE.format(
-                                                  replace_name(result['name']),
-                                                  result['weather'][0]['description'],
-                                                  config.EMOJI_DICT[result['weather'][0]['id']],
-                                                  result['main']['temp'],
-                                                  result['main']['feels_like'],
-                                                  result['main']['pressure'],
-                                                  result['main']['humidity'],
-                                                  result['clouds']['all'],
-                                                  result['wind']['speed']),
-                                                 parse_mode='HTML')
-                            else:
-                                bot.send_message(message.chat.id, config.INFO_NOT_FOUND) """
+        if message.text == 'Назад в главное меню':
+            back_to_main_menu(message)
+        elif message.text == 'Киров':
+            result = search_weather(message.text, option='current')
+            if result['cod'] == 200:
+                bot.send_message(message.chat.id,
+                                 config.CURRENT_WEATHER_MESSAGE.format(
+                                  replace_name(result['name']),
+                                  result['weather'][0]['description'],
+                                  config.EMOJI_DICT[result['weather'][0]['id']],
+                                  result['main']['temp'],
+                                  result['main']['feels_like'],
+                                  result['main']['pressure'],
+                                  result['main']['humidity'],
+                                  result['clouds']['all'],
+                                  result['wind']['speed']),
+                                 parse_mode='HTML')
             else:
-                return
-
-    def mainMenu(message: Message):
-        text: str = message.text
-        if text == 'Погода':
-            msg = bot.reply_to(message, 'Выберите город из списка или введите свой', reply_markup=weather_menu)
+                bot.send_message(message.chat.id, config.INFO_NOT_FOUND)
+            msg = bot.reply_to(message,
+                               'Выберите город из списка или введите свой',
+                               reply_markup=weather_menu)
             bot.register_next_step_handler(msg, weatherMenu)
-        elif text == 'Настройки':
-            msg = bot.reply_to(message, 'Настройки', reply_markup=config_menu)
-            bot.register_next_step_handler(msg, configMenu)
-        elif text == 'Убрать меню':
-            del_markup = ReplyKeyboardRemove(selective=False)
-            bot.send_message(message.chat.id, 'Для возврата меню: /menu',
-                             reply_markup=del_markup)
+        elif message.text == 'Кирово-Чепецк':
+            result = search_weather(message.text, option='current')
+            if result['cod'] == 200:
+                bot.send_message(message.chat.id,
+                                 config.CURRENT_WEATHER_MESSAGE.format(
+                                  replace_name(result['name']),
+                                  result['weather'][0]['description'],
+                                  config.EMOJI_DICT[result['weather'][0]['id']],
+                                  result['main']['temp'],
+                                  result['main']['feels_like'],
+                                  result['main']['pressure'],
+                                  result['main']['humidity'],
+                                  result['clouds']['all'],
+                                  result['wind']['speed']),
+                                 parse_mode='HTML')
+            else:
+                bot.send_message(message.chat.id, config.INFO_NOT_FOUND)
+            msg = bot.reply_to(message,
+                               'Выберите город из списка или введите свой',
+                               reply_markup=weather_menu)
+            bot.register_next_step_handler(msg, weatherMenu)
+        elif message.text == 'Ввести город':
+            msg = bot.reply_to(message, 'Введите город', reply_markup=input_menu)
+            bot.register_next_step_handler(msg, inputMenu)
         else:
             return
 
+    def testMenu(message: Message):
+        if message.text == 'Тест1':
+            param = message.chat.id, 'TEST1'
+            bot.send_message(message.chat.id, 'TEST1')
+            bot.register_for_reply(bot.send_message, *param)
+        elif message.text == 'Тест2':
+            param = message.chat.id, 'TEST2'
+            bot.register_next_step_handler(message.text, bot.send_message, *param)
+        elif message.text == 'Тест3':
+            bot.clear_step_handler(message)
+        elif message.text == 'Тест4':
+            back_to_main_menu(message)
+
+    def mainMenu(message: Message):
+        if message.text == 'Погода':
+            msg = bot.reply_to(message, 'Выберите город из списка или введите свой', reply_markup=weather_menu)
+            bot.register_next_step_handler(msg, weatherMenu)
+        elif message.text == 'Настройки':
+            msg = bot.reply_to(message, 'Настройки', reply_markup=config_menu)
+            bot.register_next_step_handler(msg, configMenu)
+        elif message.text == 'Тест':
+            msg = bot.reply_to(message, 'Меню для тестирования функций', reply_markup=test_menu)
+            bot.register_next_step_handler(msg, testMenu)
+        elif message.text == 'Убрать меню':
+            remove_menu(message)
+        else:
+            return
+
+    bot.enable_save_next_step_handlers(delay=2)
+    bot.load_next_step_handlers()
     msg = bot.reply_to(message, "Выберете пункт меню", reply_markup=main_menu)
     bot.register_next_step_handler(msg, mainMenu)
-
-
-bot.enable_save_next_step_handlers(delay=2)
-bot.load_next_step_handlers()
 
 """
 # Return current weather in fixed city for registred User
