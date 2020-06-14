@@ -1,9 +1,15 @@
+# -*- coding: utf-8 -*-
+# Autor: Stepan Skriabin - stepan.skrjabin@gmail.com
+# Functions
+
 from app.models import User
 import hashlib
 import os
 
 
 class UserConfig():
+    """A class for temporary storage of user settings.
+    """
     def __init__(self, id):
         self.id: int = id
         self.first_name: str = None
@@ -12,7 +18,7 @@ class UserConfig():
         self.language_code: str = None
         self.is_bot: bool = None
         self.town: str = None
-        self.password: str = None
+        self.password: bytes = None
         self.time: int = None
         self.day: int = None
         self.quantity: int = None
@@ -36,13 +42,26 @@ class UserConfig():
         return result
 
 
-def check_user_in_db(name: str) -> bool:
+def check_user_in_db(name: int) -> bool:
+    """Searching for a database entry by user ID
+
+    Args:
+        name (int): User ID (unique)
+
+    Returns:
+        bool: Returns True or False
+    """
     dbquery = User.select(User.q.userID == name)
     result = bool(dbquery.count())
     return result
 
 
-def write_user_in_db(data: dict):
+def write_user_in_db(data: dict) -> None:
+    """Database settings recording
+
+    Args:
+        data (dict): dictionary of user settings
+    """
     User(userID=data['id'],
          userFirstName=data['first_name'],
          userLastName=data['last_name'],
@@ -59,13 +78,26 @@ def write_user_in_db(data: dict):
     return
 
 
-def delete_user_in_db(name: str):
+def delete_user_in_db(name: str) -> None:
+    """Delete for a database entry by user ID
+
+    Args:
+        name (str): User ID (unique)
+    """
     dbquery = User.select(User.q.userID == name)
     User.delete(dbquery[0].id)
     return
 
 
 def read_user_in_db(user_id: int) -> dict:
+    """Reading user settings from the database
+
+    Args:
+        user_id (int): User ID (unique)
+
+    Returns:
+        dict: Returns the dictionary with all user settings
+    """
     dbquery = User.select(User.q.userID == user_id)
     result = {
         'id': dbquery[0].userID,
@@ -84,8 +116,9 @@ def read_user_in_db(user_id: int) -> dict:
     return result
 
 
-def hash_password(password: str, salt: bytes = None, salt_len: int = 32, algorithm: str = 'sha512',
-                  iteration: int = 10000, _dklen: int = 64) -> dict:
+def hash_password(password: str, salt: bytes = None, salt_len: int = 32,
+                  algorithm: str = 'sha512', iteration: int = 10000,
+                  _dklen: int = 64) -> dict:
     """ Function generates password hash
         When only one password is transmitted,
         new salt and hash will be generated.
@@ -110,7 +143,7 @@ def hash_password(password: str, salt: bytes = None, salt_len: int = 32, algorit
         salt = os.urandom(salt_len)
     else:
         salt = salt
-    b_password: bytes = password.encode(encoding='utf-8')
+    b_password = password.encode(encoding='utf-8')
     hash_from_password = hashlib.pbkdf2_hmac(
         algorithm,
         b_password,
@@ -118,7 +151,7 @@ def hash_password(password: str, salt: bytes = None, salt_len: int = 32, algorit
         iteration,
         dklen=64
     )
-    result: dict = {
+    result = {
         'salt': salt,
         'hash': hash_from_password
     }

@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 # Autor: Stepan Skriabin - stepan.skrjabin@gmail.com
-# Manger
+# Configuration utility
+
 import sqlobject as orm
 import time
 import click

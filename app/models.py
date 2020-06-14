@@ -6,6 +6,11 @@ import sqlobject as orm
 
 
 class User(orm.SQLObject):
+    """Creating a table of user settings in the database.
+
+    Args:
+        orm ([type]): [description]
+    """
     userID = orm.IntCol(unique=True)
     userFirstName = orm.StringCol()
     userLastName = orm.StringCol()
