@@ -16,6 +16,7 @@ pyTelegramBotAPI = "==3.6.7"
 SQLObject = "==3.8.0"
 beautifulsoup4 = "==4.9.1"
 requests-html = "==0.10.0"
+psycopg2 = "==2.8.5"
 
 [requires]
 python_version = "3.8"
