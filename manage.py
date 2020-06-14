@@ -6,11 +6,11 @@ import sqlobject as orm
 import time
 import click
 
-from app.config import LOCAL_SQLITE
+import app.config as config
 import app.models as models
 
 
-connection = orm.connectionForURI(LOCAL_SQLITE)
+connection = orm.connectionForURI(config.ONLINE_POSTGRESQL)
 orm.sqlhub.processConnection = connection
 
 

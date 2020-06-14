@@ -36,7 +36,7 @@ bot = TeleBot(config.TELEGRAM_TOKEN_API)
 
     The settings are in the file config.py
 """
-connection = orm.connectionForURI(config.LOCAL_SQLITE)
+connection = orm.connectionForURI(config.ONLINE_POSTGRESQL)
 orm.sqlhub.processConnection = connection
 
 
