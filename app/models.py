@@ -18,23 +18,23 @@ class User(orm.SQLObject):
     languageCode = orm.StringCol()
     isBot = orm.BoolCol()
     userTown = orm.StringCol()
-    userPassword = orm.BLOBCol()
+    userPassword = orm.StringCol()
     remindTime = orm.IntCol()
     remindDay = orm.IntCol()
     remindQuantity = orm.IntCol()
-    salt = orm.BLOBCol()
+    salt = orm.StringCol()
 
 
-class AppConfig(orm.SQLObject):
-    pass
+#class AppConfig(orm.SQLObject):
+#    pass
 
 
-class PaymenConfig(orm.SQLObject):
-    pass
+#class PaymenConfig(orm.SQLObject):
+#    pass
 
 
-class AdminConfig(orm.SQLObject):
-    pass
+#class AdminConfig(orm.SQLObject):
+#    pass
 
 
 if __name__ == '__main__':
