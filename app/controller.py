@@ -7,7 +7,7 @@ import hashlib
 import os
 
 
-class UserConfig():
+class UserConfig:
     """A class for temporary storage of user settings.
     """
     def __init__(self, id):
@@ -38,7 +38,7 @@ class UserConfig():
             'day': self.day,
             'quantity': self.quantity,
             'salt': self.salt
-        }
+            }
         return result
 
 
@@ -144,15 +144,10 @@ def hash_password(password: str, salt: bytes = None, salt_len: int = 32,
     else:
         salt = salt
     b_password = password.encode(encoding='utf-8')
-    hash_from_password = hashlib.pbkdf2_hmac(
-        algorithm,
-        b_password,
-        salt,
-        iteration,
-        dklen=64
-    )
+    hash_from_password = hashlib.pbkdf2_hmac(algorithm, b_password,
+                                             salt, iteration, dklen=64)
     result = {
         'salt': salt,
         'hash': hash_from_password
-    }
+        }
     return result

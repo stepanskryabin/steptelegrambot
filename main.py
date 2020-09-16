@@ -137,8 +137,7 @@ def markupConfig(message: Message) -> None:
                                   result['main']['pressure'],
                                   result['main']['humidity'],
                                   result['clouds']['all'],
-                                  result['wind']['speed']), parse_mode='HTML'
-                                 )
+                                  result['wind']['speed']), parse_mode='HTML')
             else:
                 bot.send_message(message.chat.id, views.INFO_NOT_FOUND)
             msg = bot.reply_to(message,

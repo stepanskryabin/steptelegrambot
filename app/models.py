@@ -25,17 +25,5 @@ class User(orm.SQLObject):
     salt = orm.StringCol()
 
 
-#class AppConfig(orm.SQLObject):
-#    pass
-
-
-#class PaymenConfig(orm.SQLObject):
-#    pass
-
-
-#class AdminConfig(orm.SQLObject):
-#    pass
-
-
 if __name__ == '__main__':
     print('This module does not need to be run as a separate process.')
